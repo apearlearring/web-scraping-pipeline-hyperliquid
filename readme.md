@@ -1,4 +1,4 @@
-# Scrapping Pipeline from HyperLiquid 
+# Scraping Pipeline from HyperLiquid 
 
 This project is webscraping pipeline that gathers comprehensive trading data from hyperdash.info (including subpages such as /analytics, /liqmap, /ticker/*) for use in a short-horizon price-direction/volatility predictor.
 
@@ -21,8 +21,8 @@ This project is webscraping pipeline that gathers comprehensive trading data fro
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/omo-protocol/hl-webscraping-puppeteer.git
-   cd hl-webscraping-puppeteer
+   git clone https://github.com/omo-protocol/hl-webscraping-pyppeteer.git
+   cd hl-webscraping-pyppeteer
    ```
 
 2. Install the required Python packages:
