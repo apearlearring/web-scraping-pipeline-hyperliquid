@@ -21,8 +21,8 @@ This project is webscraping pipeline that gathers comprehensive trading data fro
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/destroyer-art/crypto-data-fetcher.git
-   cd crypto-data-fetcher
+   git clone https://github.com/omo-protocol/hl-webscraping-puppeteer.git
+   cd hl-webscraping-puppeteer
    ```
 
 2. Install the required Python packages:

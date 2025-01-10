@@ -1,6 +1,8 @@
-from pyppeteer import launch
 import json
 from typing import Optional, Dict
+from pyppeteer import launch
+from utils.directory import ensure_data_directory
+import asyncio
 
 async def fetch_website(
     url: str, 
@@ -19,6 +21,8 @@ async def fetch_website(
         page_settings (Optional[Dict[str, str]]): Settings for the page, such as method and body for POST requests.
         max_retries (int): Maximum number of retries for fetching data.
     """
+    ensure_data_directory()
+
     browser = await launch(
         headless=True,
         executablePath='C:/Program Files/Google/Chrome/Application/chrome.exe',
@@ -110,7 +114,7 @@ async def fetch_website(
                 if retries < max_retries:
                     wait_time = 2 ** retries
                     print(f"Retrying in {wait_time} seconds...")
-                    await page.waitForTimeout(wait_time * 1000)
+                    await asyncio.sleep(wait_time)
                 else:
                     print("Max retries reached. Exiting.")
                     break

@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from utils.directory import ensure_data_directory
 
 def load_json(file_path):
     """
@@ -22,6 +23,7 @@ def save_json(data, file_path):
         data (dict): The data to save.
         file_path (str): The path to the JSON file.
     """
+    ensure_data_directory()
     with open(f'data/{file_path}', 'w') as f:
         json.dump(data, f, indent=4)
 
