@@ -9,7 +9,7 @@ async def fetch_website(
     output_file: str, 
     headers: Optional[Dict[str, str]] = None,
     page_settings: Optional[Dict[str, str]] = None,
-    max_retries: int = 5
+    max_retries: int = 3
 ):
     """
     Fetches data from a website and saves it to a JSON file.
