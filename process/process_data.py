@@ -27,40 +27,39 @@ def save_json(data, file_path):
     with open(f'data/{file_path}', 'w') as f:
         json.dump(data, f, indent=4)
 
-def process_analytics_positions(input_file, output_file):
+def process_analytics_positions(data):
     """
     Processes analytics positions data and saves a summary.
 
     Args:
         input_file (str): The input JSON file with positions data.
-        output_file (str): The output JSON file for the summary.
     """
     try:
-        data = load_json(input_file)
         position_data = data.get('data', [])
-        total_notional = sum(pos.get('Total Notional', 0) for pos in position_data)
-        total_long_notional = sum(
+        total_notional_volume = sum(pos.get('Total Notional', 0) for pos in position_data)
+        long_positions_notional = sum(
             pos.get('Majority Side Notional', 0) if pos.get('Majority Side') == 'LONG' else pos.get('Minority Side Notional', 0)
             for pos in position_data
         )
-        total_short_notional = total_notional - total_long_notional
-        total_long_positions = sum(pos.get('Number Long', 0) for pos in position_data)
-        total_short_positions = sum(pos.get('Number Short', 0) for pos in position_data)
-        assets_count = len(position_data)
-        ls_ratio = (total_long_notional / total_notional) if total_notional != 0 else 0
+        short_positions_notional = total_notional_volume - long_positions_notional
+        long_positions_count = sum(pos.get('Number Long', 0) for pos in position_data)
+        short_positions_count = sum(pos.get('Number Short', 0) for pos in position_data)
+        total_tickers = len(position_data)
+        global_ls_ratio = (long_positions_notional / total_notional_volume) if total_notional_volume != 0 else 0
         
         summary = {
-            'total_notional': total_notional,
-            'total_long_notional': total_long_notional,
-            'total_short_notional': total_short_notional,
-            'number_of_assets': assets_count,
-            'total_long_positions': total_long_positions,
-            'total_short_positions': total_short_positions,
-            'ls_ratio': ls_ratio
+            'total_notional_volume': total_notional_volume,
+            'long_positions_notional': long_positions_notional,
+            'short_positions_notional': short_positions_notional,
+            'total_tickers': total_tickers,
+            'long_positions_count': long_positions_count,
+            'short_positions_count': short_positions_count,
+            'global_ls_ratio': global_ls_ratio,
+            "base_currency": "USD",
+            "timestamp": data.get('lastUpdated', str)
         }
         
-        save_json(summary, output_file)
-        print(f"Summary successfully saved to {output_file}")
+        return summary
     
     except Exception as e:
         print(f"Error processing data: {e}")

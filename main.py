@@ -1,6 +1,7 @@
 import asyncio
 from fetch.fetch_website import fetch_website
 from process.process_data import process_analytics_positions, process_liquidation_data, process_candle_data
+from validate.schema import GlobalMarketMetrics
 import json
 
 CRYPTO_NAMES = ["BTC"]
@@ -12,11 +13,23 @@ async def fetch_analytics():
     position_url = 'https://api.hyperdash.info/summary'
     ls_trend_url = 'https://api.hyperdash.info/ls_trend'
 
-    await asyncio.gather(
-        fetch_website(position_url, 'position_data.json'),
-        fetch_website(ls_trend_url, 'ls_trend_data.json')
+    # fetch analytics data from url
+
+    position_data, ls_trend_data = await asyncio.gather(
+        fetch_website(position_url),
+        fetch_website(ls_trend_url)
     )
-    process_analytics_positions('position_data.json', 'processes_analytics_data.json')
+    
+    # process position data for global asset metrics
+
+    global_analytics_data = process_analytics_positions(position_data)
+    
+    #validate data with pydantic
+
+    global_analytics_data = GlobalMarketMetrics(**global_analytics_data)
+
+    print(global_analytics_data)
+
 
 async def fetch_liquidation():
     """
@@ -30,9 +43,9 @@ async def fetch_liquidation():
         candle_data_url = f"https://hyperdash.info/api/candle-data?ticker={crypto_name}&days=1"
 
         tasks.extend([
-            fetch_website(featured_liquidation_url, f'featured_liquidation_{crypto_name}.json'),
-            fetch_website(liquidation_data_url, f'liquidation_data_{crypto_name}.json', headers=headers),
-            fetch_website(candle_data_url, f'candle_data_{crypto_name}.json')
+            fetch_website(featured_liquidation_url),
+            fetch_website(liquidation_data_url, headers=headers),
+            fetch_website(candle_data_url)
         ])
 
     await asyncio.gather(*tasks)
@@ -64,16 +77,16 @@ async def fetch_asset():
         })
     }
     
-    await fetch_website(asset_funding_history_url, 'BTC_funding_history.json', headers=headers, page_settings=funding_history_page_settings)
+    await fetch_website(asset_funding_history_url, headers=headers, page_settings=funding_history_page_settings)
 
 async def main():
     """
     Main function to run all fetch and process tasks.
     """
     await asyncio.gather(
-        fetch_analytics(),
-        fetch_liquidation(),
-        fetch_asset()
+        fetch_analytics()
+        # fetch_liquidation(),
+        # fetch_asset()
     )
 
 if __name__ == "__main__":
