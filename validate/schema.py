@@ -101,6 +101,8 @@ class AssetMetrics(BaseModel):
     ls_ratio: float = Field(..., description="Long/Short ratio for this asset")
     majority_notional: float = Field(..., description="Total notional on the majority side")
     majority_pnl_status: str = Field(..., description="Win/Loss for the majority side in aggregates")
+    minority_notional: float = Field(..., description="Total notional on the minority side")
+    minority_pnl_status: str = Field(..., description="Win/Loss for the minority side in aggregates")
     traders_long: int = Field(..., description="Number of users going long")
     traders_short: int = Field(..., description="Number of users going short")
     open_interest: float = Field(..., description="Aggregate open interest for this asset in USD")
