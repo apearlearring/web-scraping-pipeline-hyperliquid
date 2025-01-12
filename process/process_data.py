@@ -29,10 +29,13 @@ def save_json(data, file_path):
 
 def process_analytics_positions(data):
     """
-    Processes analytics positions data and saves a summary.
+    Processes analytics positions data and returns a summary.
 
     Args:
-        input_file (str): The input JSON file with positions data.
+        data (dict): The input data with positions.
+
+    Returns:
+        dict: A summary of the analytics positions.
     """
     try:
         position_data = data.get('data', [])
@@ -66,10 +69,13 @@ def process_analytics_positions(data):
 
 def process_liquidation_data(data):
     """
-    Processes liquidation data and saves a summary.
+    Processes liquidation data and returns a summary.
 
     Args:
-        input_file (str): The input JSON file with liquidation data.
+        data (dict): The input data with liquidation details.
+
+    Returns:
+        dict: A summary of the liquidation data.
     """
     try:
         total_long_liquidation = 0

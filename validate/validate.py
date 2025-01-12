@@ -1,6 +1,15 @@
 from .schema import *
 
 def validate_global_data(data):
+    """
+    Validates global market metrics data using the GlobalMarketMetrics Pydantic model.
+
+    Args:
+        data (dict): The global market metrics data.
+
+    Returns:
+        GlobalMarketMetrics: The validated global market metrics data.
+    """
     try:
         validated_global_data = GlobalMarketMetrics(**data)
         print(validated_global_data)
@@ -17,9 +26,7 @@ def validate_asset_data(asset_data_list):
 
     Returns:
         list: A list of validated AssetMetrics objects.
-
     """
-    print(len(asset_data_list))
     validated_assets = []
     for asset_data in asset_data_list:
         try:

@@ -11,13 +11,16 @@ async def fetch_website(
     max_retries: int = 3
 ):
     """
-    Fetches data from a website and saves it to a JSON file.
+    Fetches data from a website and returns it as a JSON object.
 
     Args:
         url (str): The URL to fetch data from.
         headers (Optional[Dict[str, str]]): Additional headers for the request.
         page_settings (Optional[Dict[str, str]]): Settings for the page, such as method and body for POST requests.
         max_retries (int): Maximum number of retries for fetching data.
+
+    Returns:
+        dict: The fetched data as a JSON object.
     """
     ensure_data_directory()
 
@@ -96,7 +99,6 @@ async def fetch_website(
                     content = await page.evaluate('() => document.querySelector("body").innerText')
                     response = json.loads(content)
                 
-                # Save the response to a file
                 return response
                 
             except json.JSONDecodeError as e:
