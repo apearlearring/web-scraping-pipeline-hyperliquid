@@ -27,54 +27,57 @@ def save_json(data, file_path):
     with open(f'data/{file_path}', 'w') as f:
         json.dump(data, f, indent=4)
 
-def process_analytics_positions(input_file, output_file):
+def process_analytics_positions(data):
     """
-    Processes analytics positions data and saves a summary.
+    Processes analytics positions data and returns a summary.
 
     Args:
-        input_file (str): The input JSON file with positions data.
-        output_file (str): The output JSON file for the summary.
+        data (dict): The input data with positions.
+
+    Returns:
+        dict: A summary of the analytics positions.
     """
     try:
-        data = load_json(input_file)
         position_data = data.get('data', [])
-        total_notional = sum(pos.get('Total Notional', 0) for pos in position_data)
-        total_long_notional = sum(
+        total_notional_volume = sum(pos.get('Total Notional', 0) for pos in position_data)
+        long_positions_notional = sum(
             pos.get('Majority Side Notional', 0) if pos.get('Majority Side') == 'LONG' else pos.get('Minority Side Notional', 0)
             for pos in position_data
         )
-        total_short_notional = total_notional - total_long_notional
-        total_long_positions = sum(pos.get('Number Long', 0) for pos in position_data)
-        total_short_positions = sum(pos.get('Number Short', 0) for pos in position_data)
-        assets_count = len(position_data)
-        ls_ratio = (total_long_notional / total_notional) if total_notional != 0 else 0
+        short_positions_notional = total_notional_volume - long_positions_notional
+        long_positions_count = sum(pos.get('Number Long', 0) for pos in position_data)
+        short_positions_count = sum(pos.get('Number Short', 0) for pos in position_data)
+        total_tickers = len(position_data)
+        global_ls_ratio = (long_positions_notional / total_notional_volume) if total_notional_volume != 0 else 0
         
         summary = {
-            'total_notional': total_notional,
-            'total_long_notional': total_long_notional,
-            'total_short_notional': total_short_notional,
-            'number_of_assets': assets_count,
-            'total_long_positions': total_long_positions,
-            'total_short_positions': total_short_positions,
-            'ls_ratio': ls_ratio
+            'total_notional_volume': total_notional_volume,
+            'long_positions_notional': long_positions_notional,
+            'short_positions_notional': short_positions_notional,
+            'total_tickers': total_tickers,
+            'long_positions_count': long_positions_count,
+            'short_positions_count': short_positions_count,
+            'global_ls_ratio': global_ls_ratio,
+            "base_currency": "USD",
+            "timestamp": data.get('lastUpdated', str)
         }
         
-        save_json(summary, output_file)
-        print(f"Summary successfully saved to {output_file}")
+        return summary
     
     except Exception as e:
         print(f"Error processing data: {e}")
 
-def process_liquidation_data(input_file, output_file):
+def process_liquidation_data(data):
     """
-    Processes liquidation data and saves a summary.
+    Processes liquidation data and returns a summary.
 
     Args:
-        input_file (str): The input JSON file with liquidation data.
-        output_file (str): The output JSON file for the summary.
+        data (dict): The input data with liquidation details.
+
+    Returns:
+        dict: A summary of the liquidation data.
     """
     try:
-        data = load_json(input_file)
         total_long_liquidation = 0
         total_short_liquidation = 0
         largest_liquidation = 0
@@ -99,28 +102,7 @@ def process_liquidation_data(input_file, output_file):
             'total_liquidation': total_liquidation
         }
         
-        save_json(summary, output_file)
-        print(f"Liquidation summary successfully saved to {output_file}")
-    
-    except Exception as e:
-        print(f"Error processing data: {e}")
-
-def process_candle_data(input_file, output_file):
-    """
-    Processes candle data and converts timestamps to date format.
-
-    Args:
-        input_file (str): The input JSON file with candle data.
-        output_file (str): The output JSON file for the processed data.
-    """
-    try:
-        data = load_json(input_file)
-        processed_data = [
-            {**entry, 'date': datetime.utcfromtimestamp(entry['timestamp'] // 1000).strftime('%Y/%m/%d')}
-            for entry in data
-        ]
-        save_json(processed_data, output_file)
-        print(f"Candle data successfully saved to {output_file}")
+        return summary
     
     except Exception as e:
         print(f"Error processing data: {e}")

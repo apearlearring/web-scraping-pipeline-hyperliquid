@@ -6,20 +6,21 @@ import asyncio
 
 async def fetch_website(
     url: str, 
-    output_file: str, 
     headers: Optional[Dict[str, str]] = None,
     page_settings: Optional[Dict[str, str]] = None,
     max_retries: int = 3
 ):
     """
-    Fetches data from a website and saves it to a JSON file.
+    Fetches data from a website and returns it as a JSON object.
 
     Args:
         url (str): The URL to fetch data from.
-        output_file (str): The file to save the fetched data.
         headers (Optional[Dict[str, str]]): Additional headers for the request.
         page_settings (Optional[Dict[str, str]]): Settings for the page, such as method and body for POST requests.
         max_retries (int): Maximum number of retries for fetching data.
+
+    Returns:
+        dict: The fetched data as a JSON object.
     """
     ensure_data_directory()
 
@@ -98,12 +99,7 @@ async def fetch_website(
                     content = await page.evaluate('() => document.querySelector("body").innerText')
                     response = json.loads(content)
                 
-                # Save the response to a file
-                with open(f'data/{output_file}', 'w') as f:
-                    json.dump(response, f, indent=4)
-                
-                print(f"\nData successfully saved to {output_file}")
-                break
+                return response
                 
             except json.JSONDecodeError as e:
                 print(f"Error parsing JSON: {e}")
