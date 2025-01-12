@@ -64,16 +64,14 @@ def process_analytics_positions(data):
     except Exception as e:
         print(f"Error processing data: {e}")
 
-def process_liquidation_data(input_file, output_file):
+def process_liquidation_data(data):
     """
     Processes liquidation data and saves a summary.
 
     Args:
         input_file (str): The input JSON file with liquidation data.
-        output_file (str): The output JSON file for the summary.
     """
     try:
-        data = load_json(input_file)
         total_long_liquidation = 0
         total_short_liquidation = 0
         largest_liquidation = 0
@@ -98,28 +96,7 @@ def process_liquidation_data(input_file, output_file):
             'total_liquidation': total_liquidation
         }
         
-        save_json(summary, output_file)
-        print(f"Liquidation summary successfully saved to {output_file}")
-    
-    except Exception as e:
-        print(f"Error processing data: {e}")
-
-def process_candle_data(input_file, output_file):
-    """
-    Processes candle data and converts timestamps to date format.
-
-    Args:
-        input_file (str): The input JSON file with candle data.
-        output_file (str): The output JSON file for the processed data.
-    """
-    try:
-        data = load_json(input_file)
-        processed_data = [
-            {**entry, 'date': datetime.utcfromtimestamp(entry['timestamp'] // 1000).strftime('%Y/%m/%d')}
-            for entry in data
-        ]
-        save_json(processed_data, output_file)
-        print(f"Candle data successfully saved to {output_file}")
+        return summary
     
     except Exception as e:
         print(f"Error processing data: {e}")

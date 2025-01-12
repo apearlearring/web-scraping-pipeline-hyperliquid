@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, validator
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 #################################L/S Trend Over Time#############################################
 
@@ -70,51 +70,60 @@ class UserPosition(BaseModel):
 ######################################Asset Overview##############################################
 
 class LiquidationMetrics(BaseModel):
-    total_volume: float = Field(..., description="Total liquidation volume in the chosen time window")
-    largest_single: float = Field(..., description="Largest single liquidation amount")
-    long_volume: float = Field(..., description="Long liquidation volume in the time window")
-    short_volume: float = Field(..., description="Short liquidation volume in the time window")
-    time_window: str = Field(..., description="Time range descriptor (e.g., '24h')")
+    total_volume: float = Field(..., alias="total_liquidation")
+    largest_single: float = Field(..., alias="largest_liquidation") 
+    long_volume: float = Field(..., alias="total_long_liquidation")
+    short_volume: float = Field(..., alias="total_short_liquidation")
+    time_window: str = Field(default="7D", alias="time_window")
 
-    @validator('total_volume')
-    def check_positive(cls, value):
+    @validator('total_volume', 'largest_single')
+    def non_negative_values(cls, value):
         if value < 0:
-            raise ValueError("total_volume must be >= 0")
+            raise ValueError("Value must be non-negative")
         return value
+
 
 class FundingRate(BaseModel):
-    timestamp: datetime = Field(..., description="When this funding rate was recorded")
-    rate: float = Field(..., description="Funding rate for this period (decimal, e.g. 0.01 = 1%)")
-    annual_rate: float = Field(..., description="Annualized funding rate approximation")
-   
-    @validator('annual_rate')
-    def annual_rate_nonnegative(cls, value):
-        if value < 0:
-            raise ValueError("annual_rate cannot be negative")
-        return value
+    timestamp: datetime = Field(..., alias="time")
+    rate: float = Field(..., alias="premium")
+    annual_rate: float = Field(..., alias="fundingRate")
+
+    # @validator('annual_rate')
+    # def non_negative_values(cls, value):
+    #     if value < 0:
+    #         raise ValueError("annual_rate must be non-negative")
+    #     return value
 
 class AssetMetrics(BaseModel):
-    asset: str = Field(..., description="Asset ticker, e.g., BTC, HYPE, etc.")
-    open_interest_coverage: float = Field(..., description="Insurance coverage ratio (OI coverage)")
-    total_notional: float = Field(..., description="Total notional in USD for this asset")
-    majority_side: str = Field(..., description="Dominant position side, e.g., 'LONG' or 'SHORT'")
-    ls_ratio: float = Field(..., description="Long/Short ratio for this asset")
-    majority_notional: float = Field(..., description="Total notional on the majority side")
-    majority_pnl_status: str = Field(..., description="Win/Loss for the majority side in aggregates")
-    minority_notional: float = Field(..., description="Total notional on the minority side")
-    minority_pnl_status: str = Field(..., description="Win/Loss for the minority side in aggregates")
-    traders_long: int = Field(..., description="Number of users going long")
-    traders_short: int = Field(..., description="Number of users going short")
-    open_interest: float = Field(..., description="Aggregate open interest for this asset in USD")
-    liquidation_metrics: LiquidationMetrics
-    funding_history: List[FundingRate] = Field(..., description="List of historical funding data points")
-    timestamp: datetime = Field(..., description="Data capture time")
-    base_currency: str = Field(default="USD", description="Quote currency")
-    
-    @validator('ls_ratio')
-    def ratio_within_range(cls, value):
+    asset: str = Field(..., alias="Asset")
+    open_interest_coverage: float = Field(..., alias="OI Coverage")
+    total_notional: float = Field(..., alias="Total Notional")
+    majority_side: str = Field(..., alias="Majority Side")
+    minority_side: str = Field(..., alias="Minority Side")
+    ls_ratio: float = Field(..., alias="L/S Ratio")
+    majority_notional: float = Field(..., alias="Majority Side Notional")
+    majority_pnl_status: str = Field(..., alias="Majority Side P/L")
+    minority_notional: float = Field(..., alias="Minority Side Notional")
+    minority_pnl_status: str = Field(..., alias="Minority Side P/L")
+    traders_long: int = Field(..., alias="Number Long")
+    traders_short: int = Field(..., alias="Number Short")
+    open_interest: float = Field(..., alias="Open Interest")
+    liquidation_metrics: Optional[LiquidationMetrics] = Field(..., alias="Liquidation_Metrics")
+    funding_history: Optional[List[FundingRate]] = Field(..., alias="Funding_History")
+    timestamp: Optional[datetime] = Field(..., alias="Timestamp")
+    base_currency: str = Field(default="USD")
+
+    @validator('majority_side', 'minority_side')
+    def validate_pnl_status(cls, value):
+        valid_values = ["LONG", "SHORT"]
+        if value not in valid_values:
+            raise ValueError(f"PnL status must be one of {valid_values}")
+        return value
+
+    @validator('ls_ratio', 'open_interest_coverage', 'total_notional', 'majority_notional', 'minority_notional', 'open_interest')
+    def non_negative(cls, value):
         if value < 0:
-            raise ValueError("ls_ratio must be >= 0")
+            raise ValueError("Value must be non-negative")
         return value
 
 

@@ -17,7 +17,9 @@ def validate_asset_data(asset_data_list):
 
     Returns:
         list: A list of validated AssetMetrics objects.
+
     """
+    print(len(asset_data_list))
     validated_assets = []
     for asset_data in asset_data_list:
         try:
@@ -26,3 +28,5 @@ def validate_asset_data(asset_data_list):
         except Exception as e:
             print(f"Validation error for asset {asset_data.get('Asset')}: {e}")
     return validated_assets
+
+
