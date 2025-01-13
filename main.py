@@ -71,7 +71,7 @@ async def fetch_and_process_data():
     for i, crypto_name in enumerate(CRYPTO_NAMES):
         try:
             liquidation_data, funding_history = results[i]
-            liquidation_metrics = process_liquidation_data(liquidation_data)
+            liquidation_metrics = process_liquidation_data(liquidation_data, crypto_name)
 
             # Update asset data
             for asset in assets_position_data['data']:
@@ -94,11 +94,11 @@ async def fetch_and_process_data():
             print(f"Error processing {crypto_name}: {e}")
 
     # Validate data
-    validated_global_analytics_data = validate_global_data(global_analytics_data)
-    validated_assets = validate_asset_data(processed_asset_position_data)
+    # validated_global_analytics_data = validate_global_data(global_analytics_data)
+    # validated_assets = validate_asset_data(processed_asset_position_data)
 
-    print(validated_global_analytics_data)
-    print(validated_assets)
+    # print(validated_global_analytics_data)
+    # print(validated_assets)
 
 async def main():
     """
