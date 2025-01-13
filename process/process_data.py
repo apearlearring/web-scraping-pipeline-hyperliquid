@@ -69,28 +69,30 @@ def process_analytics_positions(data):
 
 def process_liquidation_data(data, asset_name):
     """
-    Processes liquidation data and returns a summary suitable for a distribution chart.
-    For each price level:
-    - Negative amounts only contribute to cumulative shorts (cumulative longs = 0)
-    - Positive amounts only contribute to cumulative longs (cumulative shorts = 0)
+    Processes liquidation data and returns a summary suitable for a distribution chart
+    along with liquidation metrics.
 
     Args:
         data (dict): The input data with liquidation details.
         asset_name (str): The name of the asset.
 
     Returns:
-        dict: A summary of the liquidation distribution data.
+        dict: A summary of the liquidation distribution data and metrics.
     """
     try:
+        # Distribution-related variables
         distribution = []
-        total_longs = 0  # Track total long liquidations
-        total_shorts = 0  # Track total short liquidations
-        interval = 1000  # Adjust interval as needed
+        total_longs = 0
+        total_shorts = 0
+        interval = 500
 
+        # Metrics-related variables
+        largest_single = 0
+        
         # Group data into intervals
         grouped_data = {}
         
-        # First pass: collect all liquidations
+        # First pass: collect all liquidations and calculate metrics
         for price, wallets in data.items():
             price_value = float(price)
             interval_key = int(price_value // interval * interval)
@@ -98,8 +100,11 @@ def process_liquidation_data(data, asset_name):
             if interval_key not in grouped_data:
                 grouped_data[interval_key] = {'long': 0, 'short': 0}
             
-            # Calculate liquidations at this price level
+            # Calculate liquidations and metrics at this price level
             for amount in wallets.values():
+                abs_amount = abs(amount)
+                largest_single = max(largest_single, abs_amount)
+                
                 if amount > 0:  # Long liquidation
                     grouped_data[interval_key]['long'] += amount
                     total_longs += amount
@@ -113,7 +118,6 @@ def process_liquidation_data(data, asset_name):
             short_liquidations = grouped_data[interval_key]['short']
 
             if long_liquidations > 0:
-                # If there are long liquidations, only show cumulative longs
                 distribution.append({
                     'price': interval_key,
                     'long_liquidations': round(long_liquidations, 2),
@@ -122,7 +126,6 @@ def process_liquidation_data(data, asset_name):
                     'cumulative_shorts': 0
                 })
             elif short_liquidations > 0:
-                # If there are short liquidations, only show cumulative shorts
                 distribution.append({
                     'price': interval_key,
                     'long_liquidations': 0,
@@ -135,7 +138,11 @@ def process_liquidation_data(data, asset_name):
         prices = sorted([float(price) for price in data.keys()])
         current_price = prices[-1] if prices else 0
 
-        summary = {
+        # Calculate total volume for metrics
+        total_volume = total_longs + total_shorts
+
+        # Combine distribution and metrics in the summary
+        liquidation_distribution = {
             'asset': asset_name,
             'distribution': distribution,
             'current_price': current_price,
@@ -143,16 +150,17 @@ def process_liquidation_data(data, asset_name):
             'update_interval': 60,
             'base_currency': 'USD',
             'precision': 2,
-            'total_long_liquidations': round(total_longs, 2),
-            'total_short_liquidations': round(total_shorts, 2)
+            # Add metrics section
         }
-        
-        # Save the summary to a JSON file
-        file_name = f"data/liquidation_metrics_{asset_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        save_json(summary, file_name)
-        print(f"Liquidation metrics saved to {file_name}")
-        
-        return summary
+
+        liquidation_metrics =  {
+                'total_long_liquidation': round(total_longs, 8),
+                'total_short_liquidation': round(total_shorts, 8),
+                'largest_liquidation': round(largest_single, 8),
+                'total_liquidation': round(total_volume, 8)
+            }
+        return liquidation_metrics, liquidation_distribution
     
     except Exception as e:
-        print(f"Error processing data: {e}")
+        print(f"Error processing {asset_name}: {e}")
+        return None, None

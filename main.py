@@ -1,7 +1,7 @@
 import asyncio
 from fetch.fetch_website import fetch_website
 from process.process_data import process_analytics_positions, process_liquidation_data
-from validate.validate import validate_global_data, validate_asset_data
+from validate.validate import validate_global_data, validate_asset_data, validate_liquidation_distribution_data
 import json
 
 CRYPTO_NAMES = ["BTC", "ETH", "SOL"]
@@ -59,6 +59,7 @@ async def fetch_and_process_data():
     )
 
     # Process analytics data
+    
     global_analytics_data = process_analytics_positions(assets_position_data)
 
     # Fetch and process liquidation and funding data for each crypto
@@ -67,11 +68,13 @@ async def fetch_and_process_data():
 
     processed_asset_position_data = []
     processed_ls_trend_data = []
+    processed_liquidation_distribution_data = []
 
     for i, crypto_name in enumerate(CRYPTO_NAMES):
         try:
             liquidation_data, funding_history = results[i]
-            liquidation_metrics = process_liquidation_data(liquidation_data, crypto_name)
+            liquidation_metrics, liquidation_distribution = process_liquidation_data(liquidation_data, crypto_name)
+            processed_liquidation_distribution_data.append(liquidation_distribution)
 
             # Update asset data
             for asset in assets_position_data['data']:
@@ -94,11 +97,10 @@ async def fetch_and_process_data():
             print(f"Error processing {crypto_name}: {e}")
 
     # Validate data
-    # validated_global_analytics_data = validate_global_data(global_analytics_data)
-    # validated_assets = validate_asset_data(processed_asset_position_data)
+    validated_global_analytics_data = validate_global_data(global_analytics_data)
+    validated_assets = validate_asset_data(processed_asset_position_data)
+    validated_liquidation_distribution_data = validate_liquidation_distribution_data(processed_liquidation_distribution_data)
 
-    # print(validated_global_analytics_data)
-    # print(validated_assets)
 
 async def main():
     """

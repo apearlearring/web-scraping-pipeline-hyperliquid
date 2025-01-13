@@ -37,3 +37,21 @@ def validate_asset_data(asset_data_list):
     return validated_assets
 
 
+def validate_liquidation_distribution_data(liquidation_distribution_list):
+    """
+    Validates a list of liquidation distribution data using the LiquidationDistributionData Pydantic model.
+
+    Args:
+        liquidation_distribution_list (list): A list of dictionaries, each representing liquidation distribution data.
+
+    Returns:
+        list: A list of validated LiquidationDistributionData objects.
+    """
+    validated_distributions = []
+    for distribution_data in liquidation_distribution_list:
+        try:
+            validated_distribution = LiquidationDistributionData(**distribution_data)
+            validated_distributions.append(validated_distribution)
+        except Exception as e:
+            print(f"Validation error for {distribution_data.get('asset')} liquidation distribution: {e}")
+    return validated_distributions
