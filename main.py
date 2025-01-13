@@ -1,7 +1,7 @@
 import asyncio
 from fetch.fetch_website import fetch_website
-from process.process_data import process_analytics_positions, process_liquidation_data
-from validate.validate import validate_global_data, validate_asset_data, validate_liquidation_distribution_data
+from process.process_data import process_analytics_positions, process_liquidation_data, process_ls_trend_data
+from validate.validate import validate_global_data, validate_asset_data, validate_liquidation_distribution_data, validate_ls_trend_data
 import json
 
 CRYPTO_NAMES = ["BTC", "ETH", "SOL"]
@@ -86,6 +86,7 @@ async def fetch_and_process_data():
                     })
                     processed_asset_position_data.append(asset)
                     break
+            
 
             # Update ls trend data
             for ls_trend in ls_trend_data:
@@ -96,11 +97,15 @@ async def fetch_and_process_data():
         except Exception as e:
             print(f"Error processing {crypto_name}: {e}")
 
+    processed_ls_trend_data = process_ls_trend_data(processed_ls_trend_data)
+
+
     # Validate data
     validated_global_analytics_data = validate_global_data(global_analytics_data)
     validated_assets = validate_asset_data(processed_asset_position_data)
     validated_liquidation_distribution_data = validate_liquidation_distribution_data(processed_liquidation_distribution_data)
-
+    validated_ls_trend_data = validate_ls_trend_data(processed_ls_trend_data)
+    
 
 async def main():
     """

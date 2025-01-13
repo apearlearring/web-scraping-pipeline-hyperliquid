@@ -12,7 +12,7 @@ def validate_global_data(data):
     """
     try:
         validated_global_data = GlobalMarketMetrics(**data)
-        print(validated_global_data)
+        return validated_global_data
     except Exception as e:
         print(f"Validation error for global data: {e}")
     return data
@@ -55,3 +55,23 @@ def validate_liquidation_distribution_data(liquidation_distribution_list):
         except Exception as e:
             print(f"Validation error for {distribution_data.get('asset')} liquidation distribution: {e}")
     return validated_distributions
+
+
+def validate_ls_trend_data(ls_trend_data_list):
+    """
+    Validates a list of L/S trend data using the LSTrendData Pydantic model.
+
+    Args:
+        ls_trend_data_list (list): A list of dictionaries, each representing L/S trend data.
+
+    Returns:
+        list: A list of validated LSTrendData objects.
+    """
+    validated_trends = []
+    for trend_data in ls_trend_data_list:
+        try:
+            validated_trend = LSTrendData(**trend_data)
+            validated_trends.append(validated_trend)
+        except Exception as e:
+            print(f"Validation error for {trend_data.get('asset')} L/S trend: {e}")
+    return validated_trends
