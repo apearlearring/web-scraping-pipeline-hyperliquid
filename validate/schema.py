@@ -60,6 +60,12 @@ class UserPosition(BaseModel):
     timestamp: datetime = Field(..., description="Time of this position snapshot")
     position_type: str = Field(..., description="LONG or SHORT")
 
+    @validator('position_type')
+    def validate_position_type(cls, value):
+        if value.upper() not in ["LONG", "SHORT"]:
+            raise ValueError("position_type must be either 'LONG' or 'SHORT'")
+        return value.upper()
+
     @validator('liquidation_price')
     def check_prices(cls, value):
         if value <= 0:
@@ -84,9 +90,9 @@ class LiquidationMetrics(BaseModel):
 
 
 class FundingRate(BaseModel):
-    timestamp: datetime = Field(..., alias="time")
-    rate: float = Field(..., alias="premium")
-    annual_rate: float = Field(..., alias="fundingRate")
+    timestamp: datetime = Field(..., alias="time", description="When this funding rate was recorded")
+    rate: float = Field(..., alias="premium", description="Funding rate for this period (decimal, e.g. 0.01 = 1%)")
+    annual_rate: float = Field(..., alias="fundingRate", description="Annualized funding rate approximation")
 
     # @validator('annual_rate')
     # def non_negative_values(cls, value):
