@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, validator
 from datetime import datetime
-from typing import List, Optional
+from typing import List
+from config.settings import VALID_POSITION_TYPES
 
 #################################L/S Trend Over Time#############################################
 
@@ -62,8 +63,8 @@ class UserPosition(BaseModel):
 
     @validator('position_type')
     def validate_position_type(cls, value):
-        if value.upper() not in ["LONG", "SHORT"]:
-            raise ValueError("position_type must be either 'LONG' or 'SHORT'")
+        if value.upper() not in VALID_POSITION_TYPES:
+            raise ValueError(f"position_type must be one of {VALID_POSITION_TYPES}")
         return value.upper()
 
     @validator('liquidation_price')

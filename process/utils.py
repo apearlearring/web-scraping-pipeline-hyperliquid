@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from utils.directory import ensure_data_directory
-from typing import Dict, List
+from typing import  List
 
 
 def load_json(file_path):
