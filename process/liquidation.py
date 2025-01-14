@@ -96,6 +96,6 @@ def process_liquidation(liquidation_data : Dict, asset_name : str) -> Dict:
         return liquidation_metrics, liquidation_distribution
     
     except Exception as e:
-        print(f"Error processing {asset_name}: {e}")
+        print(f"Error liquidation processing for {asset_name}: {e}")
         return None, None
 

@@ -23,7 +23,7 @@ def process_global_position(data : Dict) -> Dict:
         total_tickers = len(position_data)
         global_ls_ratio = (long_positions_notional / total_notional_volume) if total_notional_volume != 0 else 0
         
-        summary = {
+        global_position = {
             'total_notional_volume': total_notional_volume,
             'long_positions_notional': long_positions_notional,
             'short_positions_notional': short_positions_notional,
@@ -35,7 +35,7 @@ def process_global_position(data : Dict) -> Dict:
             "timestamp": data.get('lastUpdated', str)
         }
         
-        return summary
+        return global_position
     
     except Exception as e:
         print(f"Error processing data: {e}")

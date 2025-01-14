@@ -14,7 +14,7 @@ async def main():
         processed_position_data = []
         processed_liquidation_distribution_data = []
         global_position_data = process_global_position(position_data)
-        processed_ls_trend_data = process_ls_trend_data(ls_trend_data)
+        processed_ls_trend_data = process_ls_trend(ls_trend_data)
 
         for asset in CRYPTO_NAMES:
             liquidation_data = await fetch_liquidation(asset)
