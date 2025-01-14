@@ -34,7 +34,7 @@ class DataFetcher:
             'Content-Type': 'application/json',
         }
 
-    async def fetch_crypto_data(self, crypto_name: str) -> Tuple[Dict, Dict]:
+    async def fetch_crypto_liquidation_funding_data(self, crypto_name: str) -> Tuple[Dict, Dict]:
         """
         Fetches liquidation and funding data for a specific cryptocurrency.
         """
@@ -43,8 +43,8 @@ class DataFetcher:
             'body': json.dumps({
                 "type": "fundingHistory",
                 "coin": crypto_name,
-                "startTime": 1735904056588,
-                "endTime": 1736508856588
+                "startTime": int((datetime.now().timestamp() - 10800) * 1000),
+                "endTime": int(datetime.now().timestamp() * 1000)
             })
         }
 
@@ -58,12 +58,12 @@ class DataFetcher:
                 page_settings=funding_history_settings
             )
         )
-
+        
         return liquidation_data, funding_history
 
-    async def fetch_global_data(self) -> Tuple[Dict, Dict]:
+    async def fetch_position_ls_trend_data(self) -> Tuple[Dict, Dict]:
         """
-        Fetches global analytics and L/S trend data.
+        Fetches asset position and L/S trend data.
         """
         return await asyncio.gather(
             fetch_website(BASE_URLS['position']),
@@ -96,7 +96,7 @@ class DataProcessor:
         if asset_position:
             asset_position.update({
                 'Liquidation_Metrics': liquidation_metrics,
-                'Funding_History': funding_history,
+                'Funding_History': funding_history[-1],
                 'Timestamp': assets_position_data["lastUpdated"]
             })
 
@@ -118,11 +118,11 @@ async def fetch_and_process_data():
 
     try:
         # Fetch global data
-        assets_position_data, ls_trend_data = await fetcher.fetch_global_data()
+        assets_position_data, ls_trend_data = await fetcher.fetch_position_ls_trend_data()
         global_analytics_data = process_analytics_positions(assets_position_data)
 
         # Fetch crypto-specific data
-        crypto_tasks = [fetcher.fetch_crypto_data(crypto) for crypto in CRYPTO_NAMES]
+        crypto_tasks = [fetcher.fetch_crypto_liquidation_funding_data(crypto) for crypto in CRYPTO_NAMES]
         crypto_results = await asyncio.gather(*crypto_tasks)
 
         # Process results
@@ -180,6 +180,7 @@ async def main():
     """
     try:
         validated_data = await fetch_and_process_data()
+        print(validated_data['assets'])
         return validated_data
     except Exception as e:
         print(f"Application error: {e}")

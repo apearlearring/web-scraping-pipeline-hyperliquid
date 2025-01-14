@@ -114,9 +114,9 @@ class AssetMetrics(BaseModel):
     traders_long: int = Field(..., alias="Number Long")
     traders_short: int = Field(..., alias="Number Short")
     open_interest: float = Field(..., alias="Open Interest")
-    liquidation_metrics: Optional[LiquidationMetrics] = Field(..., alias="Liquidation_Metrics")
-    funding_history: Optional[List[FundingRate]] = Field(..., alias="Funding_History")
-    timestamp: Optional[datetime] = Field(..., alias="Timestamp")
+    liquidation_metrics: LiquidationMetrics = Field(..., alias="Liquidation_Metrics")
+    funding_history: FundingRate = Field(..., alias="Funding_History")
+    timestamp: datetime = Field(..., alias="Timestamp")
     base_currency: str = Field(default="USD")
 
     @validator('majority_side', 'minority_side')
