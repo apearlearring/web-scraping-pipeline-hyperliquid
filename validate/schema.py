@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, validator
 from datetime import datetime
-from typing import List, Optional
+from typing import List
+from config.settings import VALID_POSITION_TYPES
 
 #################################L/S Trend Over Time#############################################
 
@@ -62,8 +63,8 @@ class UserPosition(BaseModel):
 
     @validator('position_type')
     def validate_position_type(cls, value):
-        if value.upper() not in ["LONG", "SHORT"]:
-            raise ValueError("position_type must be either 'LONG' or 'SHORT'")
+        if value.upper() not in VALID_POSITION_TYPES:
+            raise ValueError(f"position_type must be one of {VALID_POSITION_TYPES}")
         return value.upper()
 
     @validator('liquidation_price')
@@ -108,15 +109,18 @@ class AssetMetrics(BaseModel):
     minority_side: str = Field(..., alias="Minority Side")
     ls_ratio: float = Field(..., alias="L/S Ratio")
     majority_notional: float = Field(..., alias="Majority Side Notional")
+    majority_entry_price: float = Field(..., alias="Majority Side Entry")
     majority_pnl_status: str = Field(..., alias="Majority Side P/L")
     minority_notional: float = Field(..., alias="Minority Side Notional")
+    minority_entry_price: float = Field(..., alias="Minority Side Entry")
     minority_pnl_status: str = Field(..., alias="Minority Side P/L")
+    current_price: float = Field(..., alias="Current Price")
     traders_long: int = Field(..., alias="Number Long")
     traders_short: int = Field(..., alias="Number Short")
     open_interest: float = Field(..., alias="Open Interest")
-    liquidation_metrics: Optional[LiquidationMetrics] = Field(..., alias="Liquidation_Metrics")
-    funding_history: Optional[List[FundingRate]] = Field(..., alias="Funding_History")
-    timestamp: Optional[datetime] = Field(..., alias="Timestamp")
+    liquidation_metrics: LiquidationMetrics = Field(..., alias="Liquidation_Metrics")
+    funding_history: FundingRate = Field(..., alias="Funding_History")
+    timestamp: datetime = Field(..., alias="Timestamp")
     base_currency: str = Field(default="USD")
 
     @validator('majority_side', 'minority_side')

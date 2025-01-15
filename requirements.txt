@@ -1,2 +1,32 @@
-pyppeteer==1.0.2
+# Async HTTP
+aiohttp==3.9.3
 asyncio==3.4.3
+aiodns==3.1.1
+aiofiles==23.2.1
+
+# Data handling and validation
+pydantic==2.6.3
+pydantic-settings==2.1.0
+
+# JSON processing
+ujson==5.9.0
+orjson==3.9.12
+
+# Performance optimizations
+cchardet==2.1.7
+uvloop==0.19.0
+httpx==0.26.0
+
+# Utilities
+python-dotenv==1.0.1
+colorama==0.4.6
+
+# Date and time handling
+python-dateutil==2.8.2
+
+# Logging and monitoring
+structlog==24.1.0
+
+# Type checking
+mypy==1.8.0
+types-python-dateutil==2.8.19.20240106

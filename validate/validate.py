@@ -1,6 +1,6 @@
 from .schema import *
 
-def validate_global_data(data):
+def validate_global_position_data(data):
     """
     Validates global market metrics data using the GlobalMarketMetrics Pydantic model.
 
@@ -11,13 +11,13 @@ def validate_global_data(data):
         GlobalMarketMetrics: The validated global market metrics data.
     """
     try:
-        validated_global_data = GlobalMarketMetrics(**data)
-        return validated_global_data
+        validated_global_position_data = GlobalMarketMetrics(**data)
+        return validated_global_position_data
     except Exception as e:
         print(f"Validation error for global data: {e}")
     return data
 
-def validate_asset_data(asset_data_list):
+def validate_position_data(asset_data_list):
     """
     Validates a list of asset data dictionaries using the AssetMetrics Pydantic model.
 

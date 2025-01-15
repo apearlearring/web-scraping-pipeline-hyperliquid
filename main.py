@@ -1,189 +1,56 @@
 import asyncio
-from datetime import datetime
-from typing import Dict, List, Tuple
-import json
+from process import *
+from db import read_from_influx
+from config.settings import CRYPTO_NAMES
+from colorama import init, Fore, Style
+from utils import extract_crypto_names
 
-from fetch.fetch_website import fetch_website
-from process.process_data import (
-    process_analytics_positions,
-    process_liquidation_data,
-    process_ls_trend_data
-)
-from validate.validate import (
-    validate_global_data,
-    validate_asset_data,
-    validate_liquidation_distribution_data,
-    validate_ls_trend_data
-)
-
-# Constants
-CRYPTO_NAMES = ["BTC", "ETH", "SOL"]
-BASE_URLS = {
-    'position': 'https://api.hyperdash.info/summary',
-    'ls_trend': 'https://api.hyperdash.info/ls_trend',
-    'funding_history': 'https://api.hyperliquid.xyz/info',
-    'liquidation': 'https://hyperdash.info/api/liquidation-data-v2'
-}
-API_KEY = 'hyperdash_public_7vN3mK8pQ4wX2cL9hF5tR1bY6gS0jD'
-
-class DataFetcher:
-    def __init__(self):
-        self.liquidation_headers = {'x-api-key': API_KEY}
-        self.asset_headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        }
-
-    async def fetch_crypto_data(self, crypto_name: str) -> Tuple[Dict, Dict]:
-        """
-        Fetches liquidation and funding data for a specific cryptocurrency.
-        """
-        funding_history_settings = {
-            'method': 'POST',
-            'body': json.dumps({
-                "type": "fundingHistory",
-                "coin": crypto_name,
-                "startTime": 1735904056588,
-                "endTime": 1736508856588
-            })
-        }
-
-        liquidation_url = f"{BASE_URLS['liquidation']}?ticker={crypto_name}&days=7"
-
-        liquidation_data, funding_history = await asyncio.gather(
-            fetch_website(liquidation_url, headers=self.liquidation_headers),
-            fetch_website(
-                BASE_URLS['funding_history'],
-                headers=self.asset_headers,
-                page_settings=funding_history_settings
-            )
-        )
-
-        return liquidation_data, funding_history
-
-    async def fetch_global_data(self) -> Tuple[Dict, Dict]:
-        """
-        Fetches global analytics and L/S trend data.
-        """
-        return await asyncio.gather(
-            fetch_website(BASE_URLS['position']),
-            fetch_website(BASE_URLS['ls_trend'])
-        )
-
-class DataProcessor:
-    @staticmethod
-    def process_crypto_data(
-        crypto_name: str,
-        liquidation_data: Dict,
-        funding_history: Dict,
-        assets_position_data: Dict,
-        ls_trend_data: List[Dict]
-    ) -> Tuple[Dict, Dict, Dict]:
-        """
-        Processes data for a specific cryptocurrency.
-        """
-        liquidation_metrics, liquidation_distribution = process_liquidation_data(
-            liquidation_data, crypto_name
-        )
-
-        # Find and update asset position data
-        asset_position = next(
-            (asset for asset in assets_position_data['data'] 
-             if asset['Asset'] == crypto_name),
-            None
-        )
-        
-        if asset_position:
-            asset_position.update({
-                'Liquidation_Metrics': liquidation_metrics,
-                'Funding_History': funding_history,
-                'Timestamp': assets_position_data["lastUpdated"]
-            })
-
-        # Find corresponding L/S trend data
-        ls_trend = next(
-            (trend for trend in ls_trend_data 
-             if trend['Asset'] == crypto_name),
-            None
-        )
-
-        return asset_position, liquidation_distribution, ls_trend
-
-async def fetch_and_process_data():
-    """
-    Main function to fetch and process all data.
-    """
-    fetcher = DataFetcher()
-    processor = DataProcessor()
-
-    try:
-        # Fetch global data
-        assets_position_data, ls_trend_data = await fetcher.fetch_global_data()
-        global_analytics_data = process_analytics_positions(assets_position_data)
-
-        # Fetch crypto-specific data
-        crypto_tasks = [fetcher.fetch_crypto_data(crypto) for crypto in CRYPTO_NAMES]
-        crypto_results = await asyncio.gather(*crypto_tasks)
-
-        # Process results
-        processed_data = {
-            'asset_positions': [],
-            'liquidation_distributions': [],
-            'ls_trends': []
-        }
-
-        for i, crypto_name in enumerate(CRYPTO_NAMES):
-            try:
-                liquidation_data, funding_history = crypto_results[i]
-                
-                asset_position, liquidation_distribution, ls_trend = processor.process_crypto_data(
-                    crypto_name,
-                    liquidation_data,
-                    funding_history,
-                    assets_position_data,
-                    ls_trend_data
-                )
-
-                if asset_position:
-                    processed_data['asset_positions'].append(asset_position)
-                if liquidation_distribution:
-                    processed_data['liquidation_distributions'].append(liquidation_distribution)
-                if ls_trend:
-                    processed_data['ls_trends'].append(ls_trend)
-
-            except Exception as e:
-                print(f"Error processing {crypto_name}: {e}")
-                continue
-
-        # Process L/S trend data
-        processed_ls_trend_data = process_ls_trend_data(processed_data['ls_trends'])
-
-        # Validate all data
-        validated_data = {
-            'global_analytics': validate_global_data(global_analytics_data),
-            'assets': validate_asset_data(processed_data['asset_positions']),
-            'liquidation_distribution': validate_liquidation_distribution_data(
-                processed_data['liquidation_distributions']
-            ),
-            'ls_trend': validate_ls_trend_data(processed_ls_trend_data)
-        }
-
-        return validated_data
-
-    except Exception as e:
-        print(f"Error in fetch_and_process_data: {e}")
-        raise
+# Initialize colorama for Windows
+init()
 
 async def main():
-    """
-    Entry point of the application.
-    """
+    """Main entry point of the application"""
+    # Setup logging
+    logger = LoggerSetup.setup_logger()
+    
     try:
-        validated_data = await fetch_and_process_data()
-        return validated_data
+        # Get crypto names from position data
+        try:
+            position_data = await fetch_position()
+            crypto_names = extract_crypto_names(position_data)
+            
+            if not crypto_names:
+                logger.warning(f"{Fore.YELLOW}No crypto names found in position data, falling back to configured CRYPTO_NAMES{Style.RESET_ALL}")
+                crypto_names = CRYPTO_NAMES
+            else:
+                logger.info(f"{Fore.GREEN}Found {len(crypto_names)} cryptocurrencies in position data{Style.RESET_ALL}")
+                logger.info(f"Processing: {', '.join(crypto_names)}")
+        except Exception as e:
+            logger.error(f"{Fore.RED}Error fetching position data for crypto names, falling back to configured CRYPTO_NAMES: {e}{Style.RESET_ALL}")
+            crypto_names = CRYPTO_NAMES
+        
+        # Initialize and run batch processor
+        batch_processor = BatchProcessor(batch_size=5)
+        await batch_processor.process_batches(["BTC", "ETH", "SOL", "AST", "XRP", "HYPE", "GOAT"])
+        
     except Exception as e:
-        print(f"Application error: {e}")
+        logger.error(f"Application error: {e}")
         raise
 
+def show_db(data_type: str = 'global_metrics', asset: str = "BTC", hours: int = 24):
+    """Display database contents using the read_from_influx function.
+    
+    Args:
+        data_type (str): Type of data to read ('latest_positions', 'asset_history', 'global_metrics')
+        asset (str, optional): Asset symbol for asset-specific queries. Required for 'asset_history'.
+        hours (int): Number of hours of historical data to retrieve
+    """
+    try:
+        read_from_influx(data_type=data_type, asset=asset, hours=hours)
+    except Exception as e:
+        print(f"{Fore.RED}Error reading from database: {e}{Style.RESET_ALL}")
+
+
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    asyncio.run(main())
+    # show_db()
