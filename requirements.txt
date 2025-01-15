@@ -6,3 +6,4 @@ aiodns==3.1.1
 cchardet==2.1.7
 aiofiles==23.2.1
 orjson==3.9.10
+colorama==0.4.6

@@ -19,7 +19,7 @@ ASSET_HEADERS = {
 }
 
 # Supported Cryptocurrencies
-CRYPTO_NAMES = ["HYPE", "DOGE", "LINK", "ETH", "ENA", "SOL", "LTC", "AAVE", "COMP", "ZRO", "TRB", "SAGA", "MERL", "ZEN", "GMT", "BIO", "ARB", "USUAL", "WIF", "TAO", "GRASS", "STX", "FTM", "CHILLGUY", "ME"]
+CRYPTO_NAMES = ["FTM", "CHILLGUY", "ME"]
 
 # Time Settings
 UPDATE_INTERVAL = 60  # seconds
