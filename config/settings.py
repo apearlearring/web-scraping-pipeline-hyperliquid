@@ -45,3 +45,9 @@ RETRY_DELAY = 2  # seconds
 
 # Validation Settings
 VALID_POSITION_TYPES = ["LONG", "SHORT"] 
+
+INFLUXDB_TOKEN = "xxb_17nmmKGT9xbbEToJbCsyTeLFELMnoBH54Xwk3Tjc6M9m0XVlRLlvuBNWLwBXZnwb8j3h7KR02as8GZePoQ=="
+INFLUXDB_ORG = "Omo-Protocol"
+INFLUXDB_BUCKET = "HL-Scraping-Pipeline"
+INFlUXDB_URL = "http://localhost:8086"
+INFLUXDB_RETENTION_PERIOD = "7d"  # or any other period like "7d", "60d", etc.
