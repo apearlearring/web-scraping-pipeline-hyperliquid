@@ -202,6 +202,7 @@ class BatchProcessor:
             validated_global_position_data = validate_global_position_data(global_position_data)
             validated_ls_trend_data = validate_ls_trend_data(processed_ls_trend_data)
             
+
             # Write global data to InfluxDB
             await write_to_influx(None, validated_global_position_data)
             

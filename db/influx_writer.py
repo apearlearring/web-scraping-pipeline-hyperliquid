@@ -75,6 +75,7 @@ class InfluxWriter(InfluxBase):
                 .time(datetime.fromisoformat(str(global_data.timestamp)))
             )
             self.write_api.write(bucket=self.bucket, record=point)
+            print(point)
             logging.info(f"Successfully wrote global position data to measurement {measurement_name}")
             print(f"✓ Wrote global position data -> {measurement_name}")
         except Exception as e:

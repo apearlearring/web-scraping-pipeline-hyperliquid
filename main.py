@@ -1,5 +1,6 @@
 import asyncio
 from process import *
+from db import read_from_influx
 from config.settings import CRYPTO_NAMES
 from colorama import init, Fore, Style
 from utils import extract_crypto_names
@@ -30,12 +31,26 @@ async def main():
         
         # Initialize and run batch processor
         batch_processor = BatchProcessor(batch_size=5)
-        await batch_processor.process_batches(crypto_names)
+        await batch_processor.process_batches(["BTC", "ETH", "SOL", "AST", "XRP", "HYPE", "GOAT"])
         
     except Exception as e:
         logger.error(f"Application error: {e}")
         raise
 
+def show_db(data_type: str = 'global_metrics', asset: str = "BTC", hours: int = 24):
+    """Display database contents using the read_from_influx function.
+    
+    Args:
+        data_type (str): Type of data to read ('latest_positions', 'asset_history', 'global_metrics')
+        asset (str, optional): Asset symbol for asset-specific queries. Required for 'asset_history'.
+        hours (int): Number of hours of historical data to retrieve
+    """
+    try:
+        read_from_influx(data_type=data_type, asset=asset, hours=hours)
+    except Exception as e:
+        print(f"{Fore.RED}Error reading from database: {e}{Style.RESET_ALL}")
+
+
 if __name__ == "__main__":
     asyncio.run(main())
-    
+    # show_db()

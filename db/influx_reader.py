@@ -74,7 +74,7 @@ class InfluxReader(InfluxBase):
         query = f'''
         from(bucket: "{self.bucket}")
           |> range(start: -{hours}h)
-          |> filter(fn: (r) => r["_measurement"] == "global_position")
+          |> filter(fn: (r) => r["_measurement"] == "global_positions")
           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
           |> sort(columns: ["_time"], desc: true)
         '''
