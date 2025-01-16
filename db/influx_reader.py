@@ -1,5 +1,5 @@
-from typing import Dict, List
 import logging
+from typing import Dict, List
 
 from config.settings import INFLUXDB_COMPRESSION_MIN_AGE
 
@@ -8,13 +8,13 @@ from .influx_base import InfluxBase
 
 class InfluxReader(InfluxBase):
     """Reader class for querying data from InfluxDB with support for both raw and compressed data.
-    
+
     This class provides methods to:
     - Read latest position data
     - Query historical asset data
     - Retrieve global market metrics
     - Automatically handle data source selection between raw and compressed buckets
-    
+
     The reader automatically determines whether to read from the raw or compressed bucket
     based on the age of the data being queried.
     """
@@ -26,10 +26,10 @@ class InfluxReader(InfluxBase):
 
     def _get_bucket_for_timerange(self, hours: int) -> str:
         """Determine which bucket to read from based on data age.
-        
+
         Args:
             hours (int): Number of hours of historical data requested
-            
+
         Returns:
             str: Name of the bucket to read from (raw or compressed)
         """
@@ -38,7 +38,7 @@ class InfluxReader(InfluxBase):
 
     def get_latest_positions(self) -> List[Dict]:
         """Get the latest position data for all assets.
-        
+
         Returns:
             List[Dict]: List of position data dictionaries, each containing:
                 - asset: Asset symbol
@@ -83,11 +83,11 @@ class InfluxReader(InfluxBase):
 
     def get_asset_history(self, asset: str, hours: int = 24) -> List[Dict]:
         """Get historical position data for a specific asset.
-        
+
         Args:
             asset (str): Asset symbol to query
             hours (int, optional): Number of hours of historical data to retrieve. Defaults to 24.
-            
+
         Returns:
             List[Dict]: List of historical position data points, each containing:
                 - timestamp: Data timestamp
@@ -126,10 +126,10 @@ class InfluxReader(InfluxBase):
 
     def get_global_metrics(self, hours: int = 24) -> List[Dict]:
         """Get historical global market metrics.
-        
+
         Args:
             hours (int, optional): Number of hours of historical data to retrieve. Defaults to 24.
-            
+
         Returns:
             List[Dict]: List of global metric data points, each containing:
                 - timestamp: Data timestamp

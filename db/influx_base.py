@@ -22,13 +22,13 @@ logging.basicConfig(
 
 class InfluxBase:
     """Base class for InfluxDB operations with data retention and compression support.
-    
+
     This class provides core functionality for:
     - Setting up and managing data retention policies
     - Configuring data compression and downsampling
     - Managing time-based data partitioning
     - Handling bucket creation and updates
-    
+
     Attributes:
         DEFAULT_RETENTION_PERIOD (str): Default retention period for raw data
         COMPRESSED_RETENTION_PERIOD (str): Retention period for compressed data
@@ -37,7 +37,7 @@ class InfluxBase:
         bucket (str): Name of the raw data bucket
         compressed_bucket (str): Name of the compressed data bucket
     """
-    
+
     DEFAULT_RETENTION_PERIOD = INFLUXDB_RETENTION_PERIOD
     COMPRESSED_RETENTION_PERIOD = INFLUXDB_COMPRESSED_RETENTION
 
@@ -66,13 +66,14 @@ class InfluxBase:
             "hour": dt.strftime('%H')
         }
 
-    def get_partitioned_measurement(self, base_name: str, _timestamp=None) -> str:
+    def get_partitioned_measurement(
+            self, base_name: str, _timestamp=None) -> str:
         """Get the measurement name without time suffix to reduce cardinality.
-        
+
         Args:
             base_name (str): Base name for the measurement
             _timestamp: Unused parameter kept for backward compatibility
-        
+
         Returns:
             str: The measurement name
         """
@@ -148,10 +149,10 @@ class InfluxBase:
 
     def _calculate_optimal_shard_duration(self, retention_seconds: int) -> int:
         """Calculate optimal shard group duration based on retention period.
-        
+
         Args:
             retention_seconds (int): Retention period in seconds
-            
+
         Returns:
             int: Optimal shard duration in seconds
         """
@@ -169,10 +170,10 @@ class InfluxBase:
 
     def _parse_duration(self, duration_str: str) -> int:
         """Convert duration string to seconds.
-        
+
         Args:
             duration_str (str): Duration string (e.g., '7d', '24h', '1w')
-            
+
         Returns:
             int: Duration in seconds
         """
