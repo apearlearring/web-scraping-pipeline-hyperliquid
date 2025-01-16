@@ -1,8 +1,11 @@
+import asyncio
 from typing import Optional, Tuple
 
 from db import write_to_influx
-from fetch import *
-from process import process_funding_history, process_liquidation, process_position, process_global_position, process_ls_trend
+from fetch import (fetch_funding_history, fetch_liquidation, fetch_ls_trend,
+                   fetch_position)
+from process import (process_funding_history, process_global_position,
+                     process_liquidation, process_ls_trend, process_position)
 from utils import *
 from validate import *
 

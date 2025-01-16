@@ -9,7 +9,9 @@ import asyncio
 import logging
 from functools import wraps
 from typing import Dict, List, Optional, Tuple
+
 from colorama import Fore, Style
+
 from .influx_reader import InfluxReader
 from .influx_writer import InfluxWriter
 
@@ -39,7 +41,7 @@ async def write_to_influx(validated_position_data: Optional[List],
                           validated_global_position_data: Optional[Dict],
                           batch_size: int = 10) -> Tuple[int, int]:
     """Write validated data to InfluxDB with improved error handling and batch processing.
-    
+
     The handle_db_errors decorator wraps this function to provide consistent error handling.
     If any database errors occur, the decorator will:
     1. Log the error with the function name and error details

@@ -49,5 +49,12 @@ VALID_POSITION_TYPES = ["LONG", "SHORT"]
 INFLUXDB_TOKEN = "xxb_17nmmKGT9xbbEToJbCsyTeLFELMnoBH54Xwk3Tjc6M9m0XVlRLlvuBNWLwBXZnwb8j3h7KR02as8GZePoQ=="
 INFLUXDB_ORG = "Omo-Protocol"
 INFLUXDB_BUCKET = "HL-Scraping-Pipeline"
+INFLUXDB_COMPRESSED_BUCKET = "HL-Scraping-Pipeline-Compressed"
 INFlUXDB_URL = "http://localhost:8086"
-INFLUXDB_RETENTION_PERIOD = "7d"  # or any other period like "7d", "60d", etc.
+
+# Data Retention Settings
+INFLUXDB_RETENTION_PERIOD = "7d"  # Raw data retention
+INFLUXDB_COMPRESSION_MIN_AGE = "24h"  # When to start compressing data
+INFLUXDB_COMPRESSED_RETENTION = "90d"  # How long to keep compressed data
+INFLUXDB_COMPRESSION_INTERVAL = "1h"  # Interval for compression task
+INFLUXDB_DOWNSAMPLING_WINDOW = "1h"  # Window for data aggregation

@@ -12,12 +12,13 @@ class InfluxWriter(InfluxBase):
     def __init__(self):
         super().__init__()
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
+
     def write_position_data(self, positions: List):
         """Write position data to InfluxDB with optimized partitioning and batch writing"""
         try:
             # Create a list to store points for batch writing
             points = []
-            
+
             for position in positions:
                 # Get base measurement name (without time suffix)
                 measurement_name = self.get_partitioned_measurement(
@@ -65,8 +66,12 @@ class InfluxWriter(InfluxBase):
             # Write all points in a single batch operation
             if points:
                 self.write_api.write(bucket=self.bucket, record=points)
-                print(f"✓ Successfully wrote batch of {len(points)} position data points")
-                logging.info(f"Successfully wrote batch of {len(points)} position data points")
+                print(
+                    f"✓ Successfully wrote batch of {
+                        len(points)} position data points")
+                logging.info(
+                    f"Successfully wrote batch of {
+                        len(points)} position data points")
 
         except Exception as e:
             error_msg = f"Error writing position data batch: {e}"
