@@ -1,5 +1,7 @@
-from typing import List, Dict
+from typing import Dict, List
+
 from .influx_base import InfluxBase
+
 
 class InfluxReader(InfluxBase):
     def __init__(self):
@@ -16,11 +18,11 @@ class InfluxReader(InfluxBase):
           |> group(columns: ["asset"])
           |> last()
         '''
-        
+
         try:
             result = self.query_api.query(query=query, org=self.org)
             positions = []
-            
+
             for table in result:
                 for record in table.records:
                     position = {
@@ -33,7 +35,7 @@ class InfluxReader(InfluxBase):
                         'timestamp': record.values.get('_time')
                     }
                     positions.append(position)
-            
+
             return positions
         except Exception as e:
             print(f"Error getting latest positions: {e}")
@@ -49,11 +51,11 @@ class InfluxReader(InfluxBase):
           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
           |> sort(columns: ["_time"], desc: true)
         '''
-        
+
         try:
             result = self.query_api.query(query=query, org=self.org)
             positions = []
-            
+
             for table in result:
                 for record in table.records:
                     position = {
@@ -63,7 +65,7 @@ class InfluxReader(InfluxBase):
                         'current_price': record.values.get('current_price')
                     }
                     positions.append(position)
-            
+
             return positions
         except Exception as e:
             print(f"Error getting asset history: {e}")
@@ -78,11 +80,11 @@ class InfluxReader(InfluxBase):
           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
           |> sort(columns: ["_time"], desc: true)
         '''
-        
+
         try:
             result = self.query_api.query(query=query, org=self.org)
             metrics = []
-            
+
             for table in result:
                 for record in table.records:
                     metric = {
@@ -93,8 +95,8 @@ class InfluxReader(InfluxBase):
                         'short_positions_count': record.values.get('short_positions_count')
                     }
                     metrics.append(metric)
-            
+
             return metrics
         except Exception as e:
             print(f"Error getting global metrics: {e}")
-            return [] 
+            return []

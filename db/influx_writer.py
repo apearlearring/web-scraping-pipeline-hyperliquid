@@ -1,9 +1,12 @@
+import logging
 from datetime import datetime
 from typing import List
+
 from influxdb_client import Point
 from influxdb_client.client.write_api import SYNCHRONOUS
+
 from .influx_base import InfluxBase
-import logging
+
 
 class InfluxWriter(InfluxBase):
     def __init__(self):
@@ -15,10 +18,11 @@ class InfluxWriter(InfluxBase):
         try:
             for position in positions:
                 # Get base measurement name (without time suffix)
-                measurement_name = self.get_partitioned_measurement("asset_positions", position.timestamp)
+                measurement_name = self.get_partitioned_measurement(
+                    "asset_positions", position.timestamp)
                 # Get time partition tags
                 time_tags = self._get_time_partition(position.timestamp)
-                
+
                 point = (
                     Point(measurement_name)
                     # Time-based partition tags
@@ -53,8 +57,18 @@ class InfluxWriter(InfluxBase):
                     .time(datetime.fromisoformat(str(position.timestamp)))
                 )
                 self.write_api.write(bucket=self.bucket, record=point)
-                logging.info(f"Successfully wrote position data for {position.asset} to {measurement_name} [{time_tags['year']}-{time_tags['month']}-{time_tags['day']}]")
-                print(f"✓ Wrote position data: {position.asset} -> {measurement_name} [{time_tags['year']}-{time_tags['month']}-{time_tags['day']}]")
+                logging.info(
+                    f"Successfully wrote position data for {
+                        position.asset} to {measurement_name} [{
+                        time_tags['year']}-{
+                        time_tags['month']}-{
+                        time_tags['day']}]")
+                print(
+                    f"✓ Wrote position data: {
+                        position.asset} -> {measurement_name} [{
+                        time_tags['year']}-{
+                        time_tags['month']}-{
+                        time_tags['day']}]")
         except Exception as e:
             error_msg = f"Error writing position data: {e}"
             logging.error(error_msg)
@@ -64,7 +78,8 @@ class InfluxWriter(InfluxBase):
     def write_global_position(self, global_data):
         """Write global position data to InfluxDB with daily partitioning"""
         try:
-            measurement_name = self.get_partitioned_measurement("global_positions", global_data.timestamp)
+            measurement_name = self.get_partitioned_measurement(
+                "global_positions", global_data.timestamp)
             point = (
                 Point(measurement_name)
                 .field("total_notional_volume", float(global_data.total_notional_volume))
@@ -76,10 +91,11 @@ class InfluxWriter(InfluxBase):
             )
             self.write_api.write(bucket=self.bucket, record=point)
             print(point)
-            logging.info(f"Successfully wrote global position data to measurement {measurement_name}")
+            logging.info(
+                f"Successfully wrote global position data to measurement {measurement_name}")
             print(f"✓ Wrote global position data -> {measurement_name}")
         except Exception as e:
             error_msg = f"Error writing global position data: {e}"
             logging.error(error_msg)
             print(f"✗ {error_msg}")
-            raise 
+            raise

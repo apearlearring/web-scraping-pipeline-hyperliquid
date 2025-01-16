@@ -1,7 +1,8 @@
-from typing import Dict
 from datetime import datetime
+from typing import Dict
 
-def process_liquidation(liquidation_data : Dict, asset_name : str) -> Dict:
+
+def process_liquidation(liquidation_data: Dict, asset_name: str) -> Dict:
     """
     Processes liquidation data and returns a summary suitable for a distribution chart
     along with liquidation metrics.
@@ -22,23 +23,23 @@ def process_liquidation(liquidation_data : Dict, asset_name : str) -> Dict:
 
         # Metrics-related variables
         largest_single = 0
-        
+
         # Group data into intervals
         grouped_data = {}
-        
+
         # First pass: collect all liquidations and calculate metrics
         for price, wallets in liquidation_data.items():
             price_value = float(price)
             interval_key = int(price_value // interval * interval)
-            
+
             if interval_key not in grouped_data:
                 grouped_data[interval_key] = {'long': 0, 'short': 0}
-            
+
             # Calculate liquidations and metrics at this price level
             for amount in wallets.values():
                 abs_amount = abs(amount)
                 largest_single = max(largest_single, abs_amount)
-                
+
                 if amount > 0:  # Long liquidation
                     grouped_data[interval_key]['long'] += amount
                     total_longs += amount
@@ -87,15 +88,14 @@ def process_liquidation(liquidation_data : Dict, asset_name : str) -> Dict:
             # Add metrics section
         }
 
-        liquidation_metrics =  {
-                'total_long_liquidation': round(total_longs, 8),
-                'total_short_liquidation': round(total_shorts, 8),
-                'largest_liquidation': round(largest_single, 8),
-                'total_liquidation': round(total_volume, 8)
-            }
+        liquidation_metrics = {
+            'total_long_liquidation': round(total_longs, 8),
+            'total_short_liquidation': round(total_shorts, 8),
+            'largest_liquidation': round(largest_single, 8),
+            'total_liquidation': round(total_volume, 8)
+        }
         return liquidation_metrics, liquidation_distribution
-    
+
     except Exception as e:
         print(f"Error liquidation processing for {asset_name}: {e}")
         return None, None
-

@@ -1,14 +1,11 @@
-from influxdb_client import InfluxDBClient, Point
-from influxdb_client.client.write_api import SYNCHRONOUS
-from config.settings import (
-    INFLUXDB_TOKEN,
-    INFLUXDB_ORG,
-    INFLUXDB_BUCKET,
-    INFlUXDB_URL,
-    INFLUXDB_RETENTION_PERIOD
-)
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+
+from influxdb_client import InfluxDBClient
+
+from config.settings import (INFLUXDB_BUCKET, INFLUXDB_ORG,
+                             INFLUXDB_RETENTION_PERIOD, INFLUXDB_TOKEN,
+                             INFlUXDB_URL)
 
 # Configure logging
 logging.basicConfig(
@@ -16,6 +13,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
+
 
 class InfluxBase:
     DEFAULT_RETENTION_PERIOD = INFLUXDB_RETENTION_PERIOD
@@ -54,23 +52,27 @@ class InfluxBase:
         try:
             buckets_api = self.client.buckets_api()
             bucket = buckets_api.find_bucket_by_name(self.bucket)
-            retention_seconds = self._parse_duration(self.DEFAULT_RETENTION_PERIOD)
+            retention_seconds = self._parse_duration(
+                self.DEFAULT_RETENTION_PERIOD)
 
             # Optimize shard group duration based on retention period
-            shard_duration = self._calculate_optimal_shard_duration(retention_seconds)
+            shard_duration = self._calculate_optimal_shard_duration(
+                retention_seconds)
 
             retention_rule = {
                 "type": "expire",
                 "everySeconds": retention_seconds,
                 "shardGroupDurationSeconds": shard_duration
             }
-            
+
             if bucket:
                 bucket.retention_rules = [retention_rule]
                 buckets_api.update_bucket(bucket)
                 success_msg = (
-                    f"Updated retention policy: data older than {self.DEFAULT_RETENTION_PERIOD} "
-                    f"will be automatically removed (shard duration: {shard_duration//3600}h)"
+                    f"Updated retention policy: data older than {
+                        self.DEFAULT_RETENTION_PERIOD} "
+                    f"will be automatically removed (shard duration: {
+                        shard_duration // 3600}h)"
                 )
                 logging.info(success_msg)
                 print(f"✓ {success_msg}")
@@ -81,8 +83,10 @@ class InfluxBase:
                     retention_rules=[retention_rule]
                 )
                 success_msg = (
-                    f"Created bucket with retention policy: data older than {self.DEFAULT_RETENTION_PERIOD} "
-                    f"will be automatically removed (shard duration: {shard_duration//3600}h)"
+                    f"Created bucket with retention policy: data older than {
+                        self.DEFAULT_RETENTION_PERIOD} "
+                    f"will be automatically removed (shard duration: {
+                        shard_duration // 3600}h)"
                 )
                 logging.info(success_msg)
                 print(f"✓ {success_msg}")
@@ -102,7 +106,7 @@ class InfluxBase:
         # - Retention period < 180 days: 7d shard duration
         # - Retention period >= 180 days: 14d shard duration
         hours_in_retention = retention_seconds / 3600
-        
+
         if hours_in_retention <= 48:
             return 3600  # 1 hour
         elif hours_in_retention <= 168:
@@ -118,7 +122,7 @@ class InfluxBase:
         """Convert duration string to seconds"""
         unit = duration_str[-1]
         value = int(duration_str[:-1])
-        
+
         if unit == 'd':
             return value * 24 * 60 * 60
         elif unit == 'w':
@@ -129,4 +133,4 @@ class InfluxBase:
 
     def close(self):
         """Close the InfluxDB client"""
-        self.client.close() 
+        self.client.close()

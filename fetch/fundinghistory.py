@@ -1,9 +1,10 @@
 import json
-from config.settings import BASE_URLS
-from typing import Dict
 from datetime import datetime
-from .utils import fetch_website
+from typing import Dict
 
+from config.settings import BASE_URLS
+
+from .utils import fetch_website
 
 
 def fetch_funding_history(asset_name: str) -> Dict:
@@ -23,7 +24,10 @@ def fetch_funding_history(asset_name: str) -> Dict:
             })
         }
 
-        funding_history = fetch_website(BASE_URLS['funding_history'], headers = asset_headers, page_settings=funding_history_settings)
+        funding_history = fetch_website(
+            BASE_URLS['funding_history'],
+            headers=asset_headers,
+            page_settings=funding_history_settings)
 
         return funding_history
     except Exception as e:

@@ -1,18 +1,20 @@
 import logging
-from colorama import Fore, Style
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List
 
+from colorama import Fore, Style
+
+
 class ColoredFormatter(logging.Formatter):
     """Custom formatter with colors for different log levels"""
-    
+
     COLOR_MAP = {
         logging.ERROR: Fore.RED,
         logging.WARNING: Fore.YELLOW,
         logging.INFO: Fore.WHITE
     }
-    
+
     def format(self, record):
         # Add colors based on log level or content
         if record.levelno in self.COLOR_MAP:
@@ -23,26 +25,29 @@ class ColoredFormatter(logging.Formatter):
             color = Fore.RED
         else:
             color = Fore.WHITE
-            
+
         record.msg = f"{color}{record.msg}{Style.RESET_ALL}"
         return super().format(record)
 
+
 class LoggerSetup:
     """Handles all logging configuration and formatting"""
-    
+
     @staticmethod
     def setup_logger() -> logging.Logger:
         logger = logging.getLogger()
         logger.setLevel(logging.INFO)
-        
+
         if not logger.handlers:
             ch = logging.StreamHandler()
             ch.setLevel(logging.INFO)
-            formatter = ColoredFormatter('%(asctime)s - %(levelname)s - %(message)s')
+            formatter = ColoredFormatter(
+                '%(asctime)s - %(levelname)s - %(message)s')
             ch.setFormatter(formatter)
             logger.addHandler(ch)
-        
+
         return logger
+
 
 @dataclass
 class FailureRecord:
@@ -51,6 +56,7 @@ class FailureRecord:
     step: str
     error: str
     timestamp: datetime
+
 
 @dataclass
 class BatchStats:
@@ -83,13 +89,14 @@ class BatchStats:
         if not self.failures:
             logging.info(f"{Fore.GREEN}No failures recorded{Style.RESET_ALL}")
             return
-            
+
         logging.error("Failure Details:")
         for failure in self.failures:
             logging.error(f"{Fore.RED}Asset: {failure.asset}")
             logging.error(f"Step: {failure.step}")
             logging.error(f"Error: {failure.error}")
-            logging.error(f"Time: {failure.timestamp.strftime('%Y-%m-%d %H:%M:%S')}{Style.RESET_ALL}")
+            logging.error(
+                f"Time: {failure.timestamp.strftime('%Y-%m-%d %H:%M:%S')}{Style.RESET_ALL}")
             logging.error("-" * 50)
 
     def update_from_batch(self, other: 'BatchStats'):
