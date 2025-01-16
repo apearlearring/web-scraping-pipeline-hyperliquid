@@ -1,4 +1,4 @@
-# HyperLiquid Data Pipeline
+# HyperLiquid Scraping Pipeline
 
 A robust data pipeline for gathering and analyzing cryptocurrency trading data from HyperLiquid's platform. This project implements comprehensive data collection, processing, and storage with failure handling and monitoring capabilities.
 
@@ -20,7 +20,8 @@ A robust data pipeline for gathering and analyzing cryptocurrency trading data f
 - **Persistent Storage**: 
   - InfluxDB integration for time-series data
   - Efficient querying capabilities
-  - Data retention management
+  - Tiered data retention with compression
+  - Automatic data lifecycle management
 - **Comprehensive Monitoring**:
   - Colored logging output
   - Detailed failure tracking
@@ -86,8 +87,8 @@ pip install -r requirements.txt
 
 4. Configure InfluxDB:
 - Install InfluxDB 2.0 or higher
-- Create a bucket for the project
-- Update settings in `config/settings.py` with your InfluxDB credentials
+- Create buckets for raw and compressed data
+- Update settings in `config/settings.py` with your InfluxDB credentials and retention preferences
 
 ## Usage
 
@@ -110,6 +111,30 @@ read_from_influx('asset_history', asset='BTC', hours=24)
 
 # View global metrics
 read_from_influx('global_metrics')
+```
+
+### Data Retention and Compression
+
+The pipeline implements a tiered data retention strategy:
+
+1. **Raw Data Bucket**:
+   - Stores high-resolution data for recent timeframes
+   - Default retention: 7 days
+   - Full granularity for detailed analysis
+
+2. **Compressed Data Bucket**:
+   - Stores downsampled historical data
+   - Default retention: 90 days
+   - Hourly aggregation for efficient storage
+   - Automatic compression of data older than 24 hours
+
+Configure retention settings in `config/settings.py`:
+```python
+INFLUXDB_RETENTION_PERIOD = "7d"        # Raw data retention
+INFLUXDB_COMPRESSION_MIN_AGE = "24h"    # When to start compressing
+INFLUXDB_COMPRESSED_RETENTION = "90d"    # Compressed data retention
+INFLUXDB_COMPRESSION_INTERVAL = "1h"     # Compression task interval
+INFLUXDB_DOWNSAMPLING_WINDOW = "1h"     # Aggregation window
 ```
 
 ### Monitoring
@@ -167,3 +192,23 @@ Data is stored in InfluxDB with the following structure:
    - Total market volume
    - Global L/S ratios
    - Position counts
+
+### Data Lifecycle
+
+The system automatically manages data lifecycle:
+
+1. **Recent Data (0-24h)**:
+   - Stored in raw format
+   - Full resolution
+   - Fast querying
+
+2. **Historical Data (24h-7d)**:
+   - Stored in raw format
+   - Full resolution
+   - Optimized shard groups
+
+3. **Archived Data (7d-90d)**:
+   - Automatically compressed
+   - Hourly aggregation
+   - Efficient storage and querying
+   - Balanced resolution for trend analysis

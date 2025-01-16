@@ -1,4 +1,6 @@
-from .schema import *
+from .schema import (AssetMetrics, GlobalMarketMetrics,
+                     LiquidationDistributionData, LSTrendData)
+
 
 def validate_global_position_data(data):
     """
@@ -16,6 +18,7 @@ def validate_global_position_data(data):
     except Exception as e:
         print(f"Validation error for global data: {e}")
     return data
+
 
 def validate_position_data(asset_data_list):
     """
@@ -50,10 +53,13 @@ def validate_liquidation_distribution_data(liquidation_distribution_list):
     validated_distributions = []
     for distribution_data in liquidation_distribution_list:
         try:
-            validated_distribution = LiquidationDistributionData(**distribution_data)
+            validated_distribution = LiquidationDistributionData(
+                **distribution_data)
             validated_distributions.append(validated_distribution)
         except Exception as e:
-            print(f"Validation error for {distribution_data.get('asset')} liquidation distribution: {e}")
+            print(
+                f"Validation error for {
+                    distribution_data.get('asset')} liquidation distribution: {e}")
     return validated_distributions
 
 
@@ -73,5 +79,7 @@ def validate_ls_trend_data(ls_trend_data_list):
             validated_trend = LSTrendData(**trend_data)
             validated_trends.append(validated_trend)
         except Exception as e:
-            print(f"Validation error for {trend_data.get('asset')} L/S trend: {e}")
+            print(
+                f"Validation error for {
+                    trend_data.get('asset')} L/S trend: {e}")
     return validated_trends

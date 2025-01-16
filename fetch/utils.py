@@ -1,11 +1,14 @@
-import json
-from typing import Optional, Dict
-from pyppeteer import launch
-from utils.directory import ensure_data_directory
 import asyncio
+import json
+from typing import Dict, Optional
+
+from pyppeteer import launch
+
+from utils.directory import ensure_data_directory
+
 
 async def fetch_website(
-    url: str, 
+    url: str,
     headers: Optional[Dict[str, str]] = None,
     page_settings: Optional[Dict[str, str]] = None,
     max_retries: int = 3
@@ -36,7 +39,7 @@ async def fetch_website(
             '--window-size=1920,1080'
         ]
     )
-    
+
     try:
         page = await browser.newPage()
         default_headers = {
@@ -53,13 +56,13 @@ async def fetch_website(
             'sec-fetch-site': 'same-origin',
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
         }
-        
+
         if headers:
             default_headers.update(headers)
-        
+
         await page.setViewport({'width': 1920, 'height': 1080})
         await page.setExtraHTTPHeaders(default_headers)
-        
+
         retries = 0
         while retries < max_retries:
             try:
@@ -85,22 +88,22 @@ async def fetch_website(
                         'waitUntil': 'networkidle0',
                         'timeout': 30000
                     })
-                    
+
                     if response.status in [429, 503]:
                         raise Exception(f"Received status {response.status}")
-                    
+
                     if response.status == 401:
                         print("Authentication error - check your API key")
                         return
                     elif not response.ok:
                         print(f"HTTP error: {response.status}")
                         return
-                    
+
                     content = await page.evaluate('() => document.querySelector("body").innerText')
                     response = json.loads(content)
-                
+
                 return response
-                
+
             except json.JSONDecodeError as e:
                 print(f"Error parsing JSON: {e}")
                 break
@@ -114,7 +117,6 @@ async def fetch_website(
                 else:
                     print("Max retries reached. Exiting.")
                     break
-                    
+
     finally:
         await browser.close()
-

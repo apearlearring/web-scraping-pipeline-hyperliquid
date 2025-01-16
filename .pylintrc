@@ -1,0 +1,129 @@
+[MASTER]
+# Add the project root directory to Python path
+init-hook='import sys; sys.path.append(".")'
+
+# Use multiple processes to speed up Pylint (use "0" for auto)
+jobs=0
+
+# List of plugins to load
+load-plugins=
+
+# Allow loading modules/packages from outside the project directory
+ignore=CVS
+
+# Files or directories to be skipped. They should be base names, not paths
+ignore-patterns=
+
+# Python code to execute, usually for sys.path manipulation such as pygtk.require()
+#init-hook=
+
+# Use multiple processes to speed up Pylint.
+jobs=0
+
+# Control the amount of potential inferred values when inferring a single object
+limit-inference-results=100
+
+# List of module names for which member attributes should not be checked
+ignored-modules=
+
+# List of classes names for which member attributes should not be checked
+ignored-classes=
+
+# List of members which are set dynamically and missed by pylint inference system
+generated-members=
+
+[MESSAGES CONTROL]
+# Only show warnings with the listed confidence levels
+confidence=HIGH,INFERENCE,INFERENCE_FAILURE,UNDEFINED
+
+# Disable specific warnings
+disable=C0111,  # Missing docstring
+        C0103,  # Invalid name
+        C0301,  # Line too long
+        W0511,  # TODO/FIXME comments
+        R0903,  # Too few public methods
+        R0913,  # Too many arguments
+        R0914,  # Too many local variables
+        W0621,  # Redefining name from outer scope
+        W0703   # Catching too general exception
+
+[FORMAT]
+# Maximum number of characters on a single line
+max-line-length=120
+
+# Maximum number of lines in a module
+max-module-lines=2000
+
+# String used as indentation unit (2 spaces, 4 spaces, or tab)
+indent-string='    '
+
+[BASIC]
+# Regular expression which should only match function or class names
+function-rgx=[a-z_][a-z0-9_]{2,50}$
+class-rgx=[A-Z_][a-zA-Z0-9_]+$
+
+# Regular expression which should only match correct variable names
+variable-rgx=[a-z_][a-z0-9_]{2,50}$
+
+# Good variable names which should always be accepted
+good-names=i,j,k,ex,Run,_,id,df
+
+[SIMILARITIES]
+# Minimum lines number of a similarity
+min-similarity-lines=10
+
+# Ignore imports when computing similarities
+ignore-imports=yes
+
+[TYPECHECK]
+# List of module names for which member attributes should not be checked
+ignored-modules=numpy,tensorflow,torch,cv2
+
+# List of classes names for which member attributes should not be checked
+ignored-classes=
+
+# List of members which are set dynamically and missed by pylint inference system
+generated-members=
+
+[VARIABLES]
+# A regular expression matching the name of dummy variables
+dummy-variables-rgx=_$|dummy
+
+# List of additional names to consider as builtins
+additional-builtins=
+
+[MISCELLANEOUS]
+# List of note tags to take into consideration
+notes=FIXME,XXX,TODO
+
+[IMPORTS]
+# Allow wildcard imports from modules that define __all__
+allow-wildcard-with-all=no
+
+# Analyse import fallback blocks. This can be used to support both Python 2 and 3 compatible code
+analyse-fallback-blocks=no
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=10
+
+# Maximum number of locals for function / method body
+max-locals=20
+
+# Maximum number of return / yield for function / method body
+max-returns=10
+
+# Maximum number of statements in function / method body
+max-statements=50
+
+# Maximum number of parents for a class (see R0901).
+max-parents=7
+
+# Maximum number of attributes for a class (see R0902).
+max-attributes=10
+
+# Minimum number of public methods for a class (see R0903).
+min-public-methods=0
+
+# Maximum number of public methods for a class (see R0904).
+max-public-methods=20 
