@@ -62,8 +62,10 @@ def show_db(data_type: str = 'global_metrics',
     """
     try:
         read_from_influx(data_type=data_type, asset=asset, hours=hours)
-    except Exception as e:
-        print(f"{Fore.RED}Error reading from database: {e}{Style.RESET_ALL}")
+    except (ConnectionError, TimeoutError) as e:
+        print(f"{Fore.RED}Database connection error: {e}{Style.RESET_ALL}")
+    except ValueError as e:
+        print(f"{Fore.RED}Invalid input parameters: {e}{Style.RESET_ALL}")
 
 
 if __name__ == "__main__":

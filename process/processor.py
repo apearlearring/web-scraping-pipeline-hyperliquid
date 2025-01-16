@@ -2,7 +2,7 @@ from typing import Optional, Tuple
 
 from db import write_to_influx
 from fetch import *
-from process import *
+from process import process_funding_history, process_liquidation, process_position, process_global_position, process_ls_trend
 from utils import *
 from validate import *
 

@@ -1,4 +1,4 @@
-# HyperLiquid Data Pipeline
+# HyperLiquid Scraping Pipeline
 
 A robust data pipeline for gathering and analyzing cryptocurrency trading data from HyperLiquid's platform. This project implements comprehensive data collection, processing, and storage with failure handling and monitoring capabilities.
 
