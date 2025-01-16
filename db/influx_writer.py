@@ -12,10 +12,12 @@ class InfluxWriter(InfluxBase):
     def __init__(self):
         super().__init__()
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
-
     def write_position_data(self, positions: List):
-        """Write position data to InfluxDB with optimized partitioning"""
+        """Write position data to InfluxDB with optimized partitioning and batch writing"""
         try:
+            # Create a list to store points for batch writing
+            points = []
+            
             for position in positions:
                 # Get base measurement name (without time suffix)
                 measurement_name = self.get_partitioned_measurement(
@@ -56,21 +58,18 @@ class InfluxWriter(InfluxBase):
                     .field("liquidation_short_volume", float(position.liquidation_metrics.short_volume))
                     .time(datetime.fromisoformat(str(position.timestamp)))
                 )
-                self.write_api.write(bucket=self.bucket, record=point)
+                points.append(point)
                 logging.info(
-                    f"Successfully wrote position data for {
-                        position.asset} to {measurement_name} [{
-                        time_tags['year']}-{
-                        time_tags['month']}-{
-                        time_tags['day']}]")
-                print(
-                    f"✓ Wrote position data: {
-                        position.asset} -> {measurement_name} [{
-                        time_tags['year']}-{
-                        time_tags['month']}-{
-                        time_tags['day']}]")
+                    f"Prepared position data for {position.asset} to {measurement_name} [{time_tags['year']}-{time_tags['month']}-{time_tags['day']}]")
+
+            # Write all points in a single batch operation
+            if points:
+                self.write_api.write(bucket=self.bucket, record=points)
+                print(f"✓ Successfully wrote batch of {len(points)} position data points")
+                logging.info(f"Successfully wrote batch of {len(points)} position data points")
+
         except Exception as e:
-            error_msg = f"Error writing position data: {e}"
+            error_msg = f"Error writing position data batch: {e}"
             logging.error(error_msg)
             print(f"✗ {error_msg}")
             raise

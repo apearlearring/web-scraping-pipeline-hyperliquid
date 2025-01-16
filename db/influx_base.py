@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from influxdb_client import InfluxDBClient
 

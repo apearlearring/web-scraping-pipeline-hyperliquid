@@ -39,6 +39,12 @@ async def write_to_influx(validated_position_data: Optional[List],
                           validated_global_position_data: Optional[Dict],
                           batch_size: int = 10) -> Tuple[int, int]:
     """Write validated data to InfluxDB with improved error handling and batch processing.
+    
+    The handle_db_errors decorator wraps this function to provide consistent error handling.
+    If any database errors occur, the decorator will:
+    1. Log the error with the function name and error details
+    2. Return None instead of propagating the exception
+    3. Format the error message with red coloring for visibility
 
     Args:
         validated_position_data: List of position data to write
@@ -258,11 +264,11 @@ def _print_position_data(positions: List[Dict]) -> None:
     avg_ls_ratio = sum(p.get('ls_ratio', 0)
                        for p in positions) / len(positions)
     print(f"""
-{Fore.CYAN}Summary:{Style.RESET_ALL}
-Total Market Value: ${total_notional:,.2f}
-Average L/S Ratio: {avg_ls_ratio:.3f}
-Number of Assets: {len(positions)}
-""")
+        {Fore.CYAN}Summary:{Style.RESET_ALL}
+        Total Market Value: ${total_notional:,.2f}
+        Average L/S Ratio: {avg_ls_ratio:.3f}
+        Number of Assets: {len(positions)}
+        """)
 
 
 def _print_position_entry(pos: Dict) -> None:
@@ -275,13 +281,13 @@ def _print_position_entry(pos: Dict) -> None:
     ls_color = Fore.GREEN if pos.get('ls_ratio', 0) > 1 else Fore.RED
 
     print(f"""
-{Fore.CYAN}Asset: {pos['asset']}{Style.RESET_ALL}
-    Total Notional: ${pos['total_notional']:,.2f}
-    L/S Ratio: {ls_color}{pos['ls_ratio']:.3f}{Style.RESET_ALL}
-    Current Price: ${pos['current_price']:,.2f}
-    Traders: {Fore.GREEN}{pos['traders_long']}{Style.RESET_ALL} long, {Fore.RED}{pos['traders_short']}{Style.RESET_ALL} short
-    Timestamp: {pos['timestamp']}
-{'-' * 60}""")
+        {Fore.CYAN}Asset: {pos['asset']}{Style.RESET_ALL}
+            Total Notional: ${pos['total_notional']:,.2f}
+            L/S Ratio: {ls_color}{pos['ls_ratio']:.3f}{Style.RESET_ALL}
+            Current Price: ${pos['current_price']:,.2f}
+            Traders: {Fore.GREEN}{pos['traders_long']}{Style.RESET_ALL} long, {Fore.RED}{pos['traders_short']}{Style.RESET_ALL} short
+            Timestamp: {pos['timestamp']}
+        {'-' * 60}""")
 
 
 def _print_asset_history(history: List[Dict], asset: str) -> None:
@@ -314,12 +320,12 @@ def _print_asset_history(history: List[Dict], asset: str) -> None:
     total_change = ((end_price - start_price) / start_price) * 100
 
     print(f"""
-{Fore.CYAN}Summary:{Style.RESET_ALL}
-Period: {history[-1]['timestamp']} to {history[0]['timestamp']}
-Total Price Change: {Fore.GREEN if total_change >= 0 else Fore.RED}{total_change:+.2f}%{Style.RESET_ALL}
-Starting Price: ${start_price:,.2f}
-Ending Price: ${end_price:,.2f}
-""")
+        {Fore.CYAN}Summary:{Style.RESET_ALL}
+        Period: {history[-1]['timestamp']} to {history[0]['timestamp']}
+        Total Price Change: {Fore.GREEN if total_change >= 0 else Fore.RED}{total_change:+.2f}%{Style.RESET_ALL}
+        Starting Price: ${start_price:,.2f}
+        Ending Price: ${end_price:,.2f}
+        """)
 
 
 def _print_history_point(point: Dict) -> None:
@@ -335,11 +341,11 @@ def _print_history_point(point: Dict) -> None:
         Style.RESET_ALL}" if price_change is not None else "N/A"
 
     print(f"""
-{Fore.CYAN}Timestamp: {point['timestamp']}{Style.RESET_ALL}
-    Total Notional: ${point['total_notional']:,.2f}
-    L/S Ratio: {point['ls_ratio']:.3f}
-    Price: ${point['current_price']:,.2f} ({change_str})
-{'-' * 60}""")
+        {Fore.CYAN}Timestamp: {point['timestamp']}{Style.RESET_ALL}
+            Total Notional: ${point['total_notional']:,.2f}
+            L/S Ratio: {point['ls_ratio']:.3f}
+            Price: ${point['current_price']:,.2f} ({change_str})
+        {'-' * 60}""")
 
 
 def _print_global_metrics(metrics: List[Dict]) -> None:
@@ -371,12 +377,12 @@ def _print_global_metrics(metrics: List[Dict]) -> None:
     total_change = ((end_vol - start_vol) / start_vol) * 100
 
     print(f"""
-{Fore.CYAN}Summary:{Style.RESET_ALL}
-Period: {metrics[-1]['timestamp']} to {metrics[0]['timestamp']}
-Total Volume Change: {Fore.GREEN if total_change >= 0 else Fore.RED}{total_change:+.2f}%{Style.RESET_ALL}
-Starting Volume: ${start_vol:,.2f}
-Ending Volume: ${end_vol:,.2f}
-""")
+        {Fore.CYAN}Summary:{Style.RESET_ALL}
+        Period: {metrics[-1]['timestamp']} to {metrics[0]['timestamp']}
+        Total Volume Change: {Fore.GREEN if total_change >= 0 else Fore.RED}{total_change:+.2f}%{Style.RESET_ALL}
+        Starting Volume: ${start_vol:,.2f}
+        Ending Volume: ${end_vol:,.2f}
+        """)
 
 
 def _print_metric_entry(metric: Dict) -> None:
@@ -394,9 +400,9 @@ def _print_metric_entry(metric: Dict) -> None:
     ls_color = Fore.GREEN if metric['global_ls_ratio'] > 1 else Fore.RED
 
     print(f"""
-{Fore.CYAN}Timestamp: {metric['timestamp']}{Style.RESET_ALL}
-    Total Volume: ${metric['total_notional_volume']:,.2f} ({change_str})
-    Global L/S Ratio: {ls_color}{metric['global_ls_ratio']:.3f}{Style.RESET_ALL}
-    Long Positions: {Fore.GREEN}{metric['long_positions_count']}{Style.RESET_ALL}
-    Short Positions: {Fore.RED}{metric['short_positions_count']}{Style.RESET_ALL}
-{'-' * 60}""")
+        {Fore.CYAN}Timestamp: {metric['timestamp']}{Style.RESET_ALL}
+            Total Volume: ${metric['total_notional_volume']:,.2f} ({change_str})
+            Global L/S Ratio: {ls_color}{metric['global_ls_ratio']:.3f}{Style.RESET_ALL}
+            Long Positions: {Fore.GREEN}{metric['long_positions_count']}{Style.RESET_ALL}
+            Short Positions: {Fore.RED}{metric['short_positions_count']}{Style.RESET_ALL}
+        {'-' * 60}""")
