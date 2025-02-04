@@ -10,8 +10,10 @@ BASE_URLS = {
 
 # API Keys and Headers
 LIQUIDATION_HEADERS = {
-    'x-api-key': 'hyperdash_public_7vN3mK8pQ4wX2cL9hF5tR1bY6gS0jD'
+    'X-Api-Key': 'hyperdash_public_7vN3mK8pQ4wX2cL9hF5tR1bY6gS0jD'
 }
+
+ZENROW_API_KEY = "9f8dac77494ff7542294669eb4e8cc7b652584ef"
 
 ASSET_HEADERS = {
     'Accept': 'application/json',

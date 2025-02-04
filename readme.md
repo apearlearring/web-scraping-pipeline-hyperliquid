@@ -27,6 +27,12 @@ A robust data pipeline for gathering and analyzing cryptocurrency trading data f
   - Detailed failure tracking
   - Success rate monitoring
   - Performance metrics
+- **Advanced Web Scraping**:
+  - Zenrows proxy integration for reliable data extraction
+  - Anti-bot detection bypass
+  - Automatic IP rotation
+  - JavaScript rendering support
+  - Geolocation-based access
 
 ## Project Structure
 
@@ -64,6 +70,7 @@ A robust data pipeline for gathering and analyzing cryptocurrency trading data f
 
 - Python 3.7 or higher
 - InfluxDB (2.0 or higher)
+- Zenrows API key
 - Required Python packages (see requirements.txt)
 
 ## Installation
@@ -89,6 +96,15 @@ pip install -r requirements.txt
 - Install InfluxDB 2.0 or higher
 - Create buckets for raw and compressed data
 - Update settings in `config/settings.py` with your InfluxDB credentials and retention preferences
+
+4. Configure Zenrows:
+- Sign up for a Zenrows account at https://zenrows.com
+- Copy your API key
+- Add your Zenrows API key to `config/settings.py`:
+```python
+ZENROWS_API_KEY = "your-api-key-here"
+ZENROWS_PROXY_URL = f"https://{ZENROWS_API_KEY}@proxy.zenrows.com:8001"
+```
 
 ## Usage
 
@@ -152,6 +168,48 @@ The pipeline processes data in configurable batches:
 # Configure batch size in main.py
 batch_processor = BatchProcessor(batch_size=5)
 ```
+
+### Zenrows Configuration
+
+The pipeline uses Zenrows for reliable data extraction:
+
+```python
+# Configure Zenrows in fetch/base.py
+proxy_config = {
+    'proxy': ZENROWS_PROXY_URL,
+    'proxy_headers': {
+        'X-Zenrows-Render': 'true',
+        'X-Zenrows-Javascript': 'true',
+        'X-Zenrows-Antibot': 'true'
+    }
+}
+
+# Use in fetching operations
+async def fetch_data(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, proxy=proxy_config['proxy'], 
+                             headers=proxy_config['proxy_headers']) as response:
+            return await response.json()
+```
+
+### Proxy Features
+
+Zenrows provides several features for reliable scraping:
+
+1. **Anti-Bot Protection Bypass**:
+   - Automatic CAPTCHA solving
+   - Browser fingerprint rotation
+   - Cookie management
+
+2. **IP Rotation**:
+   - Automatic IP switching
+   - Geolocation-based IPs
+   - Residential and datacenter IPs
+
+3. **JavaScript Rendering**:
+   - Full JavaScript execution
+   - Dynamic content extraction
+   - SPA support
 
 ## Error Handling
 

@@ -44,7 +44,7 @@ async def main():
 
         # Initialize and run batch processor
         batch_processor = BatchProcessor(batch_size=5)
-        await batch_processor.process_batches(["BTC", "ETH", "SOL", "AST", "XRP", "HYPE", "GOAT"])
+        await batch_processor.process_batches(crypto_names)
 
     except Exception as e:
         logger.error(f"Application error: {e}")

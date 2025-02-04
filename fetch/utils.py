@@ -1,11 +1,11 @@
-import asyncio
-import json
+from zenrows import ZenRowsClient
 from typing import Dict, Optional
-
-from pyppeteer import launch
-
+import asyncio
+from config.settings import ZENROW_API_KEY
 from utils.directory import ensure_data_directory
 
+
+client = ZenRowsClient(ZENROW_API_KEY)
 
 async def fetch_website(
     url: str,
@@ -14,7 +14,7 @@ async def fetch_website(
     max_retries: int = 3
 ):
     """
-    Fetches data from a website and returns it as a JSON object.
+    Fetches data from a website using ZenRows API and returns it as a JSON object.
 
     Args:
         url (str): The URL to fetch data from.
@@ -25,98 +25,37 @@ async def fetch_website(
     Returns:
         dict: The fetched data as a JSON object.
     """
+    print(url)
     ensure_data_directory()
 
-    browser = await launch(
-        headless=True,
-        executablePath='C:/Program Files/Google/Chrome/Application/chrome.exe',
-        args=[
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--disable-gpu',
-            '--window-size=1920,1080'
-        ]
-    )
+    retries = 0
+    while retries < max_retries:
+        try:
+            if page_settings and page_settings.get('method') == 'POST':
+                response = client.post(url, headers=headers, data=page_settings.get('body'))
+            else:
+                response = client.get(url, headers=headers)
 
-    try:
-        page = await browser.newPage()
-        default_headers = {
-            'accept': '*/*',
-            'accept-encoding': 'gzip, deflate, br, zstd',
-            'accept-language': 'en-US,en;q=0.9',
-            'connection': 'keep-alive',
-            'referer': 'https://hyperdash.info/liqmap',
-            'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Windows"',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-origin',
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
-        }
+            if response.status_code == 200:
+                # print(response.json())
+                return response.json()
+            elif response.status_code in [401, 403]:
+                print(f"Authorization error (status {response.status_code}) - check your API key")
+                return None
+            elif response.status_code in [429, 503]:
+                raise Exception(f"Rate limit or service unavailable: {response.status_code}")
+            else:
+                raise Exception(f"HTTP error: {response.status_code}")
 
-        if headers:
-            default_headers.update(headers)
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            retries += 1
+            if retries < max_retries:
+                wait_time = 2 ** retries  # Exponential backoff (in seconds)
+                print(f"Retrying in {wait_time} seconds...")
+                await asyncio.sleep(wait_time)
+            else:
+                print("Max retries reached. Exiting.")
+                return None
 
-        await page.setViewport({'width': 1920, 'height': 1080})
-        await page.setExtraHTTPHeaders(default_headers)
-
-        retries = 0
-        while retries < max_retries:
-            try:
-                if page_settings and page_settings.get('method') == 'POST':
-                    # Handle POST requests
-                    response = await page.evaluate(
-                        '''async (url, body) => {
-                            const response = await fetch(url, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: body
-                            });
-                            return await response.json();
-                        }''',
-                        url,
-                        page_settings['body']
-                    )
-                else:
-                    # Handle GET requests
-                    response = await page.goto(url, {
-                        'waitUntil': 'networkidle0',
-                        'timeout': 30000
-                    })
-
-                    if response.status in [429, 503]:
-                        raise Exception(f"Received status {response.status}")
-
-                    if response.status == 401:
-                        print("Authentication error - check your API key")
-                        return
-                    elif not response.ok:
-                        print(f"HTTP error: {response.status}")
-                        return
-
-                    content = await page.evaluate('() => document.querySelector("body").innerText')
-                    response = json.loads(content)
-
-                return response
-
-            except json.JSONDecodeError as e:
-                print(f"Error parsing JSON: {e}")
-                break
-            except Exception as e:
-                print(f"Error occurred: {e}")
-                retries += 1
-                if retries < max_retries:
-                    wait_time = 2 ** retries
-                    print(f"Retrying in {wait_time} seconds...")
-                    await asyncio.sleep(wait_time)
-                else:
-                    print("Max retries reached. Exiting.")
-                    break
-
-    finally:
-        await browser.close()
+    return None
